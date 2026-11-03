@@ -106,3 +106,4 @@ A full-time role starting in 2027 in **wealth management or financial advising**
 </p>
 
 <p align="center"><a href="#top"><img src="top.svg" alt="Back to top" width="130"></a></p>
+
