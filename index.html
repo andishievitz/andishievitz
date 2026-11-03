@@ -1,0 +1,1348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wealth Management Toolkit Demo</title>
+<meta name="description" content="Andi Shievitz's Morgan Stanley internship work, recreated with mock data: AI agents for position verification, pitch book checks, spending summaries, and a capital call tracker.">
+<style>
+:root{
+  --navy:#002B51; --navy2:#0B3A66; --blue:#187ABA; --sky:#9CC3E6; --slate:#4A5D73;
+  --bg:#F4F6F9; --card:#fff; --line:#D5DBE3; --text:#0F1B2D; --muted:#5F6B7A;
+  --ok:#1E7B4F; --ok-bg:#E5F3EC; --warn:#9A6400; --warn-bg:#FBF1DC; --bad:#B42318; --bad-bg:#FCE8E6; --info-bg:#E7EFF7;
+  --serif:Georgia,"Times New Roman",serif; --sans:"Helvetica Neue",Helvetica,Arial,sans-serif; --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--sans)}
+a{color:var(--blue)}
+.wrap{width:min(1180px,100% - 32px);margin-inline:auto}
+header.top{background:var(--navy);color:#fff;border-bottom:5px solid var(--blue)}
+header.top .wrap{padding:28px 0 24px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--sky)}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,40px);margin:6px 0 4px;line-height:1.15}
+header.top p{margin:0;color:#C9D6E3;max-width:640px}
+.back{color:#fff;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;border:1px solid rgba(255,255,255,.5);padding:9px 14px;white-space:nowrap}
+.back:hover{background:#fff;color:var(--navy)}
+.notice{background:var(--info-bg);border-left:4px solid var(--navy);padding:14px 18px;margin:22px 0 0;font-size:14px}
+.notice b{color:var(--navy)}
+nav.tabs{display:flex;gap:0;margin:24px 0 0;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{font:inherit;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:0;border-bottom:3px solid transparent;padding:14px 18px;cursor:pointer;white-space:nowrap}
+nav.tabs button .n{color:var(--blue);margin-right:6px}
+nav.tabs button[aria-selected=true]{color:var(--navy);border-bottom-color:var(--navy)}
+nav.tabs button:hover{color:var(--navy)}
+section.panel{display:none;padding:26px 0 56px}
+section.panel.active{display:block}
+.intro{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;margin-bottom:22px}
+.intro h2{font-family:var(--serif);font-weight:400;font-size:28px;color:var(--navy);margin:0 0 6px}
+.intro p{margin:0 0 8px;color:var(--text)}
+.howto{background:var(--card);border:1px solid var(--line);padding:16px 18px;font-size:14px}
+.howto h3{margin:0 0 6px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+.howto ol{margin:0;padding-left:18px}
+@media(max-width:820px){.intro{grid-template-columns:1fr}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid2>*,.intro>*,.s-grid>*,.stack>*{min-width:0}
+.stack{display:grid;grid-template-columns:1fr;gap:20px}
+.acct-hd{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;background:var(--info-bg);border-left:4px solid var(--navy);font-size:14px;margin:4px 0 8px}
+.acct-hd span:last-child{font-family:var(--serif);color:var(--navy)}
+.trunc{white-space:nowrap}
+.mono{font-family:var(--mono);font-size:12px}
+.btn.sm{padding:6px 10px;font-size:11px}
+table.cc select,table.cc input{font:inherit;font-size:12.5px;padding:5px 6px;border:1px solid var(--line);background:#fff;min-width:0;width:100%}
+table.cc .plan{display:grid;gap:5px}
+table.cc .plan .chip{justify-self:start}
+table.cc select.st{font-weight:700;width:auto}
+table.cc select.st.ok{color:var(--ok);border-color:#BFE0CF} table.cc select.st.warn{color:var(--warn);border-color:#EED7A4} table.cc select.st.info{color:var(--navy)}
+table.cc tr.needs td:first-child{box-shadow:inset 4px 0 0 var(--bad)}
+.fund{background:#fff;border:1px solid var(--line);border-top:4px solid var(--navy);margin-bottom:18px}
+.fund.needs{border-top-color:var(--bad)}
+.fund-hd{display:grid;grid-template-columns:1.5fr 1fr 1.1fr 1.1fr auto;gap:14px;align-items:start;padding:14px 16px;background:#FAFBFC}
+.fund-name b{font-family:var(--serif);font-weight:400;font-size:20px;color:var(--navy)}
+.fund-stat{font-size:14px}
+.fund-stat .l{display:block;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.fund-stat select{font:inherit;font-size:13px;padding:4px 6px;border:1px solid var(--line);background:#fff;font-weight:700}
+.fund-stat select.ok{color:var(--ok)} .fund-stat select.warn{color:var(--warn)} .fund-stat select.info{color:var(--navy)}
+.fund-hist{padding:14px 16px;border-top:1px solid var(--line);background:#F7F9FB}
+table.cc th{background:#EEF2F6;color:var(--navy)}
+table.cc .plan2{display:grid;grid-template-columns:120px 1fr;gap:5px}
+@media(max-width:900px){.fund-hd{grid-template-columns:1fr 1fr}.fund-name{grid-column:1/-1}}
+tr.hist-row td{background:#F7F9FB!important;padding:14px 16px}
+.hist-kpis{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:12px}
+.hist-kpis div{display:flex;flex-direction:column}
+.hist-kpis b{font-family:var(--serif);font-weight:400;font-size:20px;color:var(--navy)}
+.hist-kpis span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sw{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;vertical-align:middle}
+.wf .wf-row{display:grid;grid-template-columns:minmax(180px,330px) 1fr 120px;gap:10px;align-items:center;font-size:13.5px;margin:5px 0}
+.wf .track{height:16px;background:var(--bg)}
+.wf .fill{height:100%;background:var(--slate)}
+.wf .navy .fill{background:var(--navy)} .wf .blue .fill{background:var(--blue)} .wf .cut .fill{background:#C9D3DE}
+.wf .navy span,.wf .blue span{font-weight:700} .wf .blue{border-top:1px solid var(--line);padding-top:6px}
+@media(max-width:700px){.wf .wf-row{grid-template-columns:1fr 90px}.wf .track{display:none}}
+.headline{background:var(--ok-bg);border-left:4px solid var(--ok);padding:12px 16px;font-size:15px;margin:0 0 16px}
+.sec-h{margin:4px 0 8px;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
+.all-pos summary{cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin:4px 0 12px}
+select{max-width:100%}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+@media(max-width:600px){select{min-width:0;width:100%}label.sel{flex-wrap:wrap;width:100%}.slide{aspect-ratio:auto}.slide .s-grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--navy)}
+.card>.hd{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card>.hd h3{margin:0;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--navy)}
+.card>.bd{padding:16px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+label.sel{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:center}
+select{font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);background:#fff;color:var(--text);min-width:220px}
+.btn{font:inherit;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 16px;border:1px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer}
+.btn:hover{background:var(--bg)}
+.btn.primary{background:var(--navy);color:#fff}
+.btn.primary:hover{background:var(--navy2)}
+.btn:disabled{opacity:.5;cursor:default}
+textarea.stmt{width:100%;height:440px;font:12px/1.5 var(--mono);border:1px solid var(--line);padding:14px;background:#FCFCFD;color:#1d2433;resize:vertical;white-space:pre;overflow:auto}
+.small{font-size:12.5px;color:var(--muted)}
+.steps{list-style:none;margin:0;padding:0;font-size:14px}
+.steps li{display:flex;gap:10px;align-items:center;padding:6px 0;color:var(--muted)}
+.steps li.done{color:var(--text)}
+.steps li .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:10px;color:#fff}
+.steps li.done .dot{background:var(--ok);border-color:var(--ok)}
+.steps li.run .dot{border-color:var(--blue);border-top-color:transparent;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.steps li.run .dot{animation:none}}
+.empty{color:var(--muted);font-size:14px;padding:30px 10px;text-align:center;border:1px dashed var(--line);background:#FBFCFD}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);margin:4px 0 16px;background:#fff}
+.kpi{padding:12px 14px;border-left:1px solid var(--line)}
+.kpi:first-child{border-left:0}
+.kpi .v{font-family:var(--serif);font-size:24px;color:var(--navy);line-height:1.1}
+.kpi .l{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+@media(max-width:600px){.kpis{grid-template-columns:repeat(2,1fr)}.kpi:nth-child(3){border-left:0}}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;background:#fff}
+th{background:var(--navy);color:#fff;text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 10px;white-space:nowrap}
+td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#FAFBFC}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{font-weight:700;background:var(--bg)!important;border-top:2px solid var(--navy)}
+.chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 8px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.info{background:var(--info-bg);color:var(--navy)}
+.notes{margin:14px 0 0;padding:14px 16px;background:var(--bg);border-left:3px solid var(--blue);font-size:14px}
+.notes h4{margin:0 0 6px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin:3px 0}
+/* pitch book slide */
+.slide{border:1px solid var(--line);background:#fff;aspect-ratio:16/10;padding:22px 26px;display:flex;flex-direction:column;gap:12px;position:relative}
+.slide .s-top{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--navy);padding-bottom:8px}
+.slide .s-title{font-family:var(--serif);font-size:22px;color:var(--navy)}
+.slide .s-sub{font-size:12px;color:var(--muted)}
+.slide .s-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1}
+.slide .s-k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.slide .s-v{font-family:var(--serif);font-size:26px;color:var(--navy)}
+.ed{outline:1px dashed transparent;padding:0 2px;cursor:text}
+.ed:hover,.ed:focus{outline-color:var(--blue);background:#F2F7FC}
+.alloc-row{display:grid;grid-template-columns:110px 1fr 56px;gap:8px;align-items:center;font-size:13px;margin:5px 0}
+.alloc-bar{height:10px;background:var(--bg)}
+.alloc-bar i{display:block;height:100%;background:var(--navy)}
+.slide .foot{font-size:10px;color:var(--muted);border-top:1px solid var(--line);padding-top:6px}
+.flag-mark{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--bad)}
+.src td:first-child{color:var(--muted)}
+/* spending */
+.bars .row{display:grid;grid-template-columns:120px 1fr 90px;gap:10px;align-items:center;margin:6px 0;font-size:13.5px}
+.bars .track{height:14px;background:var(--bg)}
+.bars .fill{height:100%;background:var(--navy)}
+.bars .row:nth-child(2) .fill{background:var(--navy2)}
+.bars .row:nth-child(n+3) .fill{background:var(--blue)}
+.brief{border:1px solid var(--line);background:#fff;padding:16px 18px;margin-top:14px;font-size:14.5px}
+.brief h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:19px;color:var(--navy)}
+.brief p{margin:0 0 8px}
+.scroll{max-height:420px;overflow:auto}
+footer{border-top:1px solid var(--line);padding:22px 0 40px;color:var(--muted);font-size:13px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <div class="kicker">Andi Shievitz &nbsp;|&nbsp; Interactive Portfolio Demo</div>
+      <h1>Private Wealth Management Toolkit</h1>
+      <p>A hands-on recreation of the AI agents and trackers I built during my Private Wealth Management internship. Pick a client, run an agent, and see what it catches.</p>
+    </div>
+    <a class="back" id="backlink" href="https://github.com/andishievitz">&larr; Back to portfolio</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="notice" role="note">
+    <b>Recreated with mock data.</b> Every client, account, fund, and figure on this page is fictional, and security prices are illustrative. No confidential information is used. The original agents ran on Morgan Stanley's internal AI platform; this demo recreates their logic in JavaScript so you can try the workflow yourself. This page is my own work and is not affiliated with or endorsed by Morgan Stanley.
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Tools">
+    <button role="tab" aria-selected="true" aria-controls="p1" id="t1"><span class="n">01</span>New-Client Position Extractor</button>
+    <button role="tab" aria-selected="false" aria-controls="p2" id="t2"><span class="n">02</span>Pitch Book Checker</button>
+    <button role="tab" aria-selected="false" aria-controls="p3" id="t3"><span class="n">03</span>Spending Summarizer</button>
+    <button role="tab" aria-selected="false" aria-controls="p4" id="t4"><span class="n">04</span>Capital Call Tracker</button>
+  </nav>
+
+  <!-- ========== 1. POSITION EXTRACTOR ========== -->
+  <section class="panel active" id="p1" role="tabpanel" aria-labelledby="t1">
+    <div class="intro">
+      <div>
+        <h2>New-Client Position Extractor</h2>
+        <p><b>The friction:</b> when a new client moves assets to the firm, we first have to confirm we can actually hold every position they own. That meant hours with the ACATS (transfer) team combing through long statements from the client's old firm, one line at a time: page headers, account summaries, wrapped descriptions, bonds priced as a percent of par, trade activity, and fine print.</p>
+        <p><b>The agent:</b> reads every page, extracts each holding by account, reconciles the totals so nothing is missed, and checks each position against the firm's security master and transfer rules. It clears everything that can move in kind and hands the ACATS team a short action list of the <i>few</i> positions that actually need verification.</p>
+      </div>
+      <div class="howto">
+        <h3>Try it</h3>
+        <ol>
+          <li>Pick a new client and scroll through their raw statement.</li>
+          <li>Click <b>Run agent</b>. See how short the action list is compared to the statement.</li>
+          <li>Edit the statement (try changing a price or adding a line) and run it again.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="sel" for="pe-hh">New client <select id="pe-hh"></select></label>
+      <button class="btn primary" id="pe-run">Run agent</button>
+      <button class="btn" id="pe-reset">Reset statement</button>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="hd"><h3>Statement from the client's previous firm (input)</h3><span class="small" id="pe-src"></span></div>
+        <div class="bd"><textarea class="stmt" id="pe-text" spellcheck="false" aria-label="Statement text"></textarea>
+        <div class="small" style="margin-top:6px">This is the raw text pulled from the old firm's multi-page PDF: headers, footers, summaries, wrapped lines, activity, and fine print included. Every line is editable.</div></div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Agent output</h3><span class="small" id="pe-stamp"></span></div>
+        <div class="bd" id="pe-out"><div class="empty">Click <b>Run agent</b> to extract and verify positions.</div></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px">
+      <div class="hd"><h3>Firm security master (mock)</h3><span class="small">What the agent checks each position against</span></div>
+      <div class="bd"><div class="tbl-wrap" id="pe-records"></div></div>
+    </div>
+  </section>
+
+  <!-- ========== 2. PITCH BOOK CHECKER ========== -->
+  <section class="panel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
+    <div class="intro">
+      <div>
+        <h2>Pitch Book Checker</h2>
+        <p><b>The friction:</b> each reporting period, client review decks were rolled forward from the last quarter. Any figure that didn't get refreshed (an old date, last quarter's return, allocations that no longer add up) could end up in front of a client.</p>
+        <p><b>The agent:</b> compares every figure on the slide to the reporting system for the current period, flags stale or mismatched numbers, explains <i>why</i> each one is wrong, and suggests the fix.</p>
+      </div>
+      <div class="howto">
+        <h3>Try it</h3>
+        <ol>
+          <li>Choose a client review deck and click <b>Check slide</b>.</li>
+          <li>Click any number on the slide to edit it, then check again.</li>
+          <li>Use <b>Apply suggested fixes</b> to correct everything at once.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="sel" for="pb-hh">Review deck <select id="pb-hh"></select></label>
+      <button class="btn primary" id="pb-run">Check slide</button>
+      <button class="btn" id="pb-fix" disabled>Apply suggested fixes</button>
+      <button class="btn" id="pb-reset">Reset slide</button>
+    </div>
+    <div class="grid2">
+      <div>
+        <div class="slide" id="pb-slide" aria-label="Pitch book slide"></div>
+        <div class="small" style="margin-top:6px">Mock pitch book slide. Numbers with a dashed outline on hover are editable.</div>
+        <div class="card" style="margin-top:16px">
+          <div class="hd"><h3>Reporting system (source of truth)</h3><span class="small" id="pb-period"></span></div>
+          <div class="bd"><div class="tbl-wrap"><table class="src" id="pb-source"></table></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Agent output</h3><span class="small" id="pb-stamp"></span></div>
+        <div class="bd" id="pb-out"><div class="empty">Click <b>Check slide</b> to compare the pitch book against the reporting system.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 3. SPENDING SUMMARIZER ========== -->
+  <section class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
+    <div class="intro">
+      <div>
+        <h2>Client Spending Summarizer</h2>
+        <p><b>The friction:</b> before a fund-raising conversation, a Client Service Associate needs to know what a client <i>actually</i> spends. For a wealthy family that can mean 25 accounts (checking, credit cards, LLCs, kids' accounts, IRAs, 529s, a donor-advised fund, a credit line) and hundreds of cryptic transactions every quarter. Money moving between their own accounts and card payoffs makes the outflows look several times bigger than real spending.</p>
+        <p><b>The agent:</b> consolidates every account, strips out internal transfers, card payments, trades, and capital calls, avoids double counts, categorizes what's left from raw merchant text, and checks liquidity against upcoming capital calls, then writes the CSA a one-page brief.</p>
+      </div>
+      <div class="howto">
+        <h3>Try it</h3>
+        <ol>
+          <li>Pick a client and look at the account list and raw ledger.</li>
+          <li>Filter the ledger by account to see how messy each one is.</li>
+          <li>Click <b>Summarize</b> to see gross outflows reduced to true spending.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="sel" for="sp-hh">Client <select id="sp-hh"></select></label>
+      <button class="btn primary" id="sp-run">Summarize</button>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="hd"><h3>Every account for this client, Q3 2026 (input)</h3><span class="small" id="sp-count"></span></div>
+        <div class="bd">
+          <div class="grid2">
+            <div><div class="tbl-wrap scroll" id="sp-accts"></div></div>
+            <div>
+              <div class="controls" style="margin-bottom:8px"><label class="sel" for="sp-filter">Raw ledger <select id="sp-filter"></select></label></div>
+              <div class="tbl-wrap scroll" id="sp-tx"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="hd"><h3>Agent output</h3><span class="small" id="sp-stamp"></span></div>
+        <div class="bd" id="sp-out"><div class="empty">Click <b>Summarize</b> to generate the CSA brief.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 4. CAPITAL CALL TRACKER ========== -->
+  <section class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
+    <div class="intro">
+      <div>
+        <h2>Capital Call &amp; Distribution Tracker</h2>
+        <p><b>The friction:</b> private equity, credit, and real estate funds call capital and pay distributions on their own schedules. Updates were scattered across fund calls and documents, and figuring out <i>where</i> each call would be funded from often happened at the last minute.</p>
+        <p><b>The tool:</b> organized the way the team works: by <b>fund</b>, with every client in that fund underneath. Each fund shows its next call or distribution and the GP notice status. Each client row shows their share of the call, their status, and the CSA's funding plan: where the FA may want to take funds from, and whether funds need to be raised. Every fund's call history is one click away. This recreation covers <b>8 funds, 8 clients, and &#36;113.5M</b> in mock commitments.</p>
+      </div>
+      <div class="howto">
+        <h3>Try it</h3>
+        <ol>
+          <li>Pick a client's <b>Fund from</b> account. The tracker warns you if that account is short for their share of the call.</li>
+          <li>Mark <b>Raise funds?</b> and leave a note for the FA.</li>
+          <li>Click <b>Call history</b> on any fund to see every past call and distribution.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="sel" for="cc-hh">Client <select id="cc-hh"></select></label>
+      <label class="sel" for="cc-st">Strategy <select id="cc-st"></select></label>
+      <label class="sel" for="cc-win">Next event <select id="cc-win">
+        <option value="999">Any time</option><option value="30">Within 30 days</option><option value="60">Within 60 days</option><option value="90">Within 90 days</option></select></label>
+      <label class="sel" style="gap:6px"><input type="checkbox" id="cc-act"> Only clients needing a plan</label>
+    </div>
+    <div class="kpis" id="cc-kpis"></div>
+    <div id="cc-list"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-top:10px">
+      <div class="small">As of October 31, 2026 (mock date). Your entries are saved in this browser only. Unfunded = commitment minus capital called.</div>
+      <div style="display:flex;gap:10px"><button class="btn" id="cc-reset">Reset CSA inputs</button><button class="btn primary" id="cc-export">Export funding plan (CSV)</button></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Built by Andi Shievitz to recreate internship work with fictional data. &nbsp;·&nbsp; <a href="#" id="dl">Download the mock data (JSON)</a> &nbsp;·&nbsp; <a href="mailto:andi.shievitz@gmail.com">andi.shievitz@gmail.com</a></div>
+</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   MOCK DATA (all fictional)
+   ===================================================================== */
+const AS_OF = new Date(2026, 9, 31); // Oct 31, 2026
+
+const HOUSEHOLDS = [
+  { id: "hartley",   name: "Hartley Family Trust",        custodian: "Granite Peak Securities", acct: "XXXX-4417", cash: 1850000 },
+  { id: "okafor",    name: "Okafor Household",            custodian: "Bluestem Brokerage",      acct: "XXXX-2093", cash: 420000 },
+  { id: "lindqvist", name: "Lindqvist Family Foundation", custodian: "Cedar Ridge Trust Co.",   acct: "XXXX-7751", cash: 3200000 },
+];
+const hh = id => HOUSEHOLDS.find(h => h.id === id);
+
+// ---------- New-client statements from other firms (fictional, multi-account, messy) ----------
+// Row types: {d, id, q, p, cost, wrap}   stocks / ETFs / mutual funds   (wrap = description split over two lines)
+//            {d, cusip, par, p, cost, accr}  bonds, price as % of par
+//            {d, cusip|contract, q, p, cost}  alternatives / annuities (units × unit value)
+//            {cash}                         sweep balance
+//            mv: override the printed market value (plants a statement error)
+const PROSPECTS = [
+  { id: "whitfield", name: "Whitfield Revocable Trust" },
+  { id: "nakamura",  name: "Nakamura Household" },
+  { id: "delgado",   name: "Delgado Family Foundation" },
+];
+const STATEMENTS = {
+  whitfield: {
+    custodian: "GRANITE PEAK SECURITIES", owner: "Whitfield Revocable Trust",
+    accounts: [
+      { acct: "XXXX-4417", title: "Trust Brokerage", sections: [
+        ["Equities", [
+          { d: "APPLE INC", id: "AAPL", q: 1250, p: 227.40, cost: 185275.00 },
+          { d: "AMAZON.COM INC", id: "AMZN", q: 640, p: 186.30, cost: 98560.00 },
+          { d: "COCA-COLA CO", id: "KO", q: 2412.638, p: 70.15, cost: 139930.00 },
+          { d: "JOHNSON & JOHNSON", id: "JNJ", q: 900, p: 161.20, cost: 148500.00 },
+          { d: "JPMORGAN CHASE & CO", id: "JPM", q: 1100, p: 236.80, cost: 171490.00 },
+          { d: "MICROSOFT CORP", id: "MSFT", q: 820, p: 431.10, cost: 251060.00 },
+          { d: "NESTLE SA REG SHS FOREIGN ORDINARY", id: "NSRGF", q: 300, p: 101.45, cost: 33600.00, wrap: true },
+          { d: "EXXON MOBIL CORP", id: "XOM", q: 1150, p: 117.25, cost: 104650.00 } ]],
+        ["Exchange-Traded Funds", [
+          { d: "VANGUARD TOTAL STOCK MARKET ETF", id: "VTI", q: 2400, p: 289.50, cost: 512880.00, wrap: true },
+          { d: "VANGUARD TOTAL BOND MARKET ETF", id: "BND", q: 6100, p: 73.20, cost: 463600.00, wrap: true },
+          { d: "SPDR GOLD SHARES", id: "GLD", q: 900, p: 241.60, cost: 215865.00 },
+          { d: "ISHARES NATIONAL MUNI BOND ETF", id: "MUB", q: 3300, p: 107.90, cost: 359370.00, wrap: true } ]],
+        ["Mutual Funds", [
+          { d: "GRANITE PEAK CORE BOND FUND CL A", id: "GPCBX", q: 18240.117, p: 9.84, cost: 186050.00, wrap: true },
+          { d: "AMERICAN FUNDS GROWTH FUND OF AMERICA F2", id: "GFFFX", q: 2210.402, p: 78.91, cost: 141200.00, wrap: true } ]],
+        ["Fixed Income", [
+          { d: "US TREASURY NOTE 4.250% DUE 05/15/2034", cusip: "91282CKQ3", par: 250000, p: 98.625, cost: 252180.00, accr: 1357.07 },
+          { d: "CITY & CNTY OF DENVER CO GO 5.000% DUE 08/01/2031", cusip: "249182RT4", par: 100000, p: 104.112, cost: 106950.00, accr: 833.33 },
+          { d: "TALLGRASS MIDSTREAM PARTNERS SR NT 6.000% DUE 09/01/2030 144A", cusip: "87470LAF8", par: 75000, p: 101.375, cost: 74250.00, accr: 375.00 } ]],
+        ["Alternative Investments", [
+          { d: "SUMMIT NON-TRADED REIT INC CL I (NOT LISTED ON AN EXCHANGE)", cusip: "86634Q102", q: 9600, p: 26.00, cost: 250000.00 } ]],
+        ["Cash & Sweep", [ { cash: 184220.31 } ]],
+      ], activity: [
+        ["09/04", "BOUGHT", "SPDR GOLD SHARES", "GLD", 900, 239.85],
+        ["09/15", "DIVIDEND", "MICROSOFT CORP", "MSFT", null, 680.60],
+        ["09/16", "REINVESTED", "COCA-COLA CO", "KO", 16.581, 70.40],
+        ["09/30", "INTEREST", "BANK DEPOSIT SWEEP", "CASH", null, 412.87] ] },
+      { acct: "XXXX-8802", title: "Rollover IRA", sections: [
+        ["Exchange-Traded Funds", [
+          { d: "VANGUARD TOTAL INTERNATIONAL STOCK ETF", id: "VXUS", q: 3100, p: 64.70, cost: 182900.00, wrap: true },
+          { d: "SCHWAB US DIVIDEND EQUITY ETF", id: "SCHD", q: 4200, p: 28.60, cost: 109200.00, wrap: true },
+          { d: "ISHARES CORE S&P MID-CAP ETF", id: "IJH", q: 1800, p: 62.15, cost: 99000.00 } ]],
+        ["Mutual Funds", [
+          { d: "PIMCO INCOME FUND INSTL CL", id: "PIMIX", q: 12480.552, p: 10.71, cost: 131045.80 },
+          { d: "GRANITE PEAK GOVT MONEY MARKET FUND", id: "GPMXX", q: 42118.09, p: 1.00, cost: 42118.09, wrap: true } ]],
+        ["Cash & Sweep", [ { cash: 8412.06 } ]],
+      ], activity: [
+        ["09/25", "DIVIDEND", "SCHWAB US DIVIDEND EQUITY ETF", "SCHD", null, 1102.50] ] },
+    ],
+  },
+  nakamura: {
+    custodian: "BLUESTEM BROKERAGE", owner: "Kenji & Mei Nakamura JTWROS",
+    accounts: [
+      { acct: "XXXX-2093", title: "Joint Brokerage", sections: [
+        ["Equities", [
+          { d: "NVIDIA CORP", id: "NVDA", q: 700, p: 138.20, cost: 38150.00 },
+          { d: "BERKSHIRE HATHAWAY INC DEL CL B NEW", id: "BRK.B", q: 210, p: 468.90, cost: 71400.00, wrap: true },
+          { d: "VISA INC CL A", id: "V", q: 420, p: 288.40, cost: 96600.00 } ]],
+        ["Exchange-Traded Funds", [
+          { d: "SPDR S&P 500 ETF TRUST", id: "SPY", q: 600, p: 572.30, cost: 271800.00 },
+          { d: "VANGUARD S&P 500 ETF", id: "VOO", q: 380, p: 526.10, cost: 171000.00 },
+          { d: "INVESCO QQQ TRUST SERIES 1", id: "QQQ", q: 450, p: 498.10, cost: 168750.00 },
+          { d: "ISHARES CORE US AGGREGATE BOND ETF", id: "AGG", q: 2800, p: 99.40, cost: 282240.00, wrap: true },
+          { d: "VANGUARD TOTAL INTERNATIONAL STOCK ETF", id: "VXUS", q: 1900, p: 64.70, cost: 112100.00, wrap: true } ]],
+        ["Fixed Income", [
+          { d: "MICROSOFT CORP SR NT 3.300% DUE 02/06/2027", cusip: "594918BY9", par: 50000, p: 99.418, cost: 49210.00, accr: 449.17 } ]],
+        ["Annuities", [
+          { d: "BLUESTEM SELECT VARIABLE ANNUITY II (HELD AWAY, INFORMATION ONLY)", contract: "VA8841207", q: 8412.55, p: 23.774, cost: 175000.00 } ]],
+        ["Cash & Sweep", [ { cash: 41208.77 } ]],
+      ], activity: [
+        ["09/05", "DIVIDEND", "SPDR S&P 500 ETF TRUST", "SPY", null, 1015.50],
+        ["09/12", "DIVIDEND", "ISHARES CORE US AGGREGATE BOND ETF", "AGG", null, 854.00],
+        ["09/26", "DIVIDEND", "VANGUARD TOTAL INTERNATIONAL STOCK ETF", "VXUS", null, 973.75],
+        ["09/30", "INTEREST", "BANK DEPOSIT SWEEP", "CASH", null, 96.14] ] },
+    ],
+  },
+  delgado: {
+    custodian: "CEDAR RIDGE TRUST CO.", owner: "Delgado Family Foundation",
+    accounts: [
+      { acct: "XXXX-7751", title: "Endowment", sections: [
+        ["Equities", [
+          { d: "FRONT RANGE BIOSCIENCES INC RESTRICTED LEGEND RULE 144", id: "FRBX", q: 15000, p: 12.40, cost: 30000.00, wrap: true },
+          { d: "PINECREST MINING CORP OTC PINK", id: "PNCMF", q: 40000, p: 0.42, cost: 22000.00 },
+          { d: "UNITEDHEALTH GROUP INC", id: "UNH", q: 260, p: 584.70, cost: 129800.00 } ]],
+        ["Exchange-Traded Funds", [
+          { d: "VANGUARD FTSE DEVELOPED MARKETS ETF", id: "VEA", q: 5200, p: 52.10, cost: 239200.00, wrap: true },
+          { d: "VANGUARD DIVIDEND APPRECIATION ETF", id: "VIG", q: 1400, p: 199.80, cost: 233800.00, wrap: true },
+          { d: "ISHARES 20+ YEAR TREASURY BOND ETF", id: "TLT", q: 2500, p: 93.40, cost: 245000.00, wrap: true, mv: 223500.00 },
+          { d: "SCHWAB US DIVIDEND EQUITY ETF", id: "SCHD", q: 3000, p: 28.60, cost: 78900.00, wrap: true },
+          { d: "VANGUARD REAL ESTATE ETF", id: "VNQ", q: 1000, p: 96.80, cost: 88400.00 } ]],
+        ["Fixed Income", [
+          { d: "COLORADO ST BLDG EXCELLENT SCHS TODAY COPS 4.000% DUE 03/15/2038", cusip: "196480KZ5", par: 500000, p: 97.250, cost: 503750.00, accr: 11555.56 },
+          { d: "US TREASURY BOND 4.625% DUE 05/15/2044", cusip: "912810UA4", par: 200000, p: 101.031, cost: 198400.00, accr: 1181.32 } ]],
+        ["Cash & Sweep", [ { cash: 96310.44 } ]],
+      ], activity: [
+        ["09/15", "INTEREST", "COLORADO ST BLDG EXCELLENT SCHS COPS", "CASH", null, 10000.00],
+        ["09/20", "WITHDRAWAL", "GRANT DISBURSEMENT: COMMUNITY EDUCATION", "CASH", null, -62000.00] ] },
+      { acct: "XXXX-3390", title: "Operating", sections: [
+        ["Exchange-Traded Funds", [
+          { d: "ISHARES 0-3 MONTH TREASURY BOND ETF", id: "SGOV", q: 4100.274, p: 100.52, cost: 411900.00, wrap: true } ]],
+        ["Mutual Funds", [
+          { d: "VANGUARD FEDERAL MONEY MARKET FUND", id: "VMFXX", q: 152906.18, p: 1.00, cost: 152906.18, wrap: true } ]],
+        ["Cash & Sweep", [ { cash: 22184.90 } ]],
+      ], activity: [
+        ["09/30", "REINVESTED", "ISHARES 0-3 MONTH TREASURY BOND ETF", "SGOV", 14.274, 100.52] ] },
+    ],
+  },
+};
+// Our firm's security master: what can be held here after an ACATS transfer
+// type: eligible | foreign | proprietary | mmf-proprietary
+const SECURITY_MASTER = {
+  AAPL: "eligible", AMZN: "eligible", KO: "eligible", JNJ: "eligible", JPM: "eligible", MSFT: "eligible", XOM: "eligible", NSRGF: "foreign",
+  VTI: "eligible", BND: "eligible", GLD: "eligible", MUB: "eligible", VXUS: "eligible", SCHD: "eligible", IJH: "eligible",
+  PIMIX: "eligible", GFFFX: "eligible", GPCBX: "proprietary", GPMXX: "mmf-proprietary", VMFXX: "eligible",
+  "91282CKQ3": "eligible", "249182RT4": "eligible", "594918BY9": "eligible", "196480KZ5": "eligible", "912810UA4": "eligible",
+  NVDA: "eligible", "BRK.B": "eligible", V: "eligible", SPY: "eligible", VOO: "eligible", QQQ: "eligible", AGG: "eligible",
+  FRBX: "eligible", UNH: "eligible", VEA: "eligible", VIG: "eligible", TLT: "eligible", VNQ: "eligible", SGOV: "eligible",
+};
+
+// Pitch book slides vs. reporting system
+const PITCH = {
+  hartley: {
+    title: "Hartley Family Trust | Q3 2026 Portfolio Review", period: "09/30/2026",
+    slide:  { asOf: "06/30/2026", total: 48.2, equity: 58, fixed: 27, alts: 12, cash: 4, ytd: 6.8, bench: 7.4, accounts: 6 },
+    source: { asOf: "09/30/2026", total: 51.6, equity: 57, fixed: 28, alts: 11, cash: 4, ytd: 8.1, bench: 7.9, accounts: 6 },
+    prior:  { total: 48.2, ytd: 6.8, bench: 7.4 },
+  },
+  okafor: {
+    title: "Okafor Household | Q3 2026 Portfolio Review", period: "09/30/2026",
+    slide:  { asOf: "09/30/2026", total: 12.4, equity: 64, fixed: 30, alts: 0, cash: 6, ytd: 9.2, bench: 7.4, accounts: 3 },
+    source: { asOf: "09/30/2026", total: 12.4, equity: 64, fixed: 30, alts: 0, cash: 6, ytd: 9.2, bench: 7.9, accounts: 4 },
+    prior:  { total: 11.7, ytd: 6.9, bench: 7.4 },
+  },
+  lindqvist: {
+    title: "Lindqvist Family Foundation | Q3 2026 Review", period: "09/30/2026",
+    slide:  { asOf: "09/30/2026", total: 86.3, equity: 52, fixed: 33, alts: 11, cash: 4, ytd: 7.6, bench: 7.9, accounts: 9 },
+    source: { asOf: "09/30/2026", total: 86.3, equity: 52, fixed: 33, alts: 11, cash: 4, ytd: 7.6, bench: 7.9, accounts: 9 },
+    prior:  { total: 83.0, ytd: 5.2, bench: 7.4 },
+  },
+};
+
+// Private funds our clients are invested in. Every client in a fund is called the same % of commitment on the same date.
+const EXTRA_CLIENTS = { // tracker-only clients (cash accounts the CSA can fund calls from)
+  brennan:    { name: "Brennan Family Trust",   accounts: [["1101", "Trust Checking", "checking", "Trust", 380000], ["1110", "Money Market Savings", "savings", "Trust", 2100000], ["1120", "Trust Brokerage", "brokerage", "Trust"], ["1130", "Securities-Backed Line", "loc", "Trust"]] },
+  castillo:   { name: "Castillo Household",     accounts: [["2201", "Joint Checking", "checking", "Joint", 92000], ["2210", "High-Yield Savings", "savings", "Joint", 240000], ["2220", "Joint Brokerage", "brokerage", "Joint"]] },
+  whitman:    { name: "Whitman Family Office",  accounts: [["3301", "Operating Checking", "checking", "Family Office", 1450000], ["3310", "Treasury Reserve", "savings", "Family Office", 4800000], ["3320", "Family Brokerage", "brokerage", "Family Office"], ["3330", "Credit Facility", "loc", "Family Office"]] },
+  patel:      { name: "Patel Revocable Trust",  accounts: [["4401", "Trust Checking", "checking", "Trust", 156000], ["4410", "Trust Savings", "savings", "Trust", 410000], ["4420", "Trust Brokerage", "brokerage", "Trust"]] },
+  moraleskim: { name: "Morales-Kim Household",  accounts: [["5501", "Joint Checking", "checking", "Joint", 48000], ["5510", "Savings", "savings", "Joint", 96000], ["5520", "Joint Brokerage", "brokerage", "Joint"], ["5530", "Pledged Asset Line", "loc", "Joint"]] },
+};
+const FUND_LIST = [
+  { fund: "Alpine Peak Partners IV", strategy: "Private equity", vintage: "2022-03", calledPct: 62, distPct: 21, gp: "Notice received", next: { type: "Call", date: "2026-12-15", pct: 7.5 },
+    lps: [["hartley", 10000000], ["whitman", 7500000], ["brennan", 5000000], ["patel", 2500000], ["okafor", 1500000]] },
+  { fund: "Summit Credit Opportunities II", strategy: "Private credit", vintage: "2023-01", calledPct: 45, distPct: 11.25, gp: "Notice received", next: { type: "Distribution", date: "2026-11-20", pct: 2.25 },
+    lps: [["hartley", 8000000], ["whitman", 5000000], ["lindqvist", 4000000], ["castillo", 2000000]] },
+  { fund: "Clear Creek Ventures VI", strategy: "Venture capital", vintage: "2024-02", calledPct: 40, distPct: 0, gp: "Estimated", next: { type: "Call", date: "2027-02-10", pct: 10 },
+    lps: [["hartley", 3000000], ["brennan", 2000000], ["moraleskim", 1000000]] },
+  { fund: "Front Range Growth III", strategy: "Private equity", vintage: "2024-09", calledPct: 30, distPct: 0, gp: "Awaiting GP update", next: { type: "Call", date: "2026-11-18", pct: 10 },
+    lps: [["okafor", 3500000], ["patel", 2000000], ["castillo", 1500000], ["moraleskim", 1000000]] },
+  { fund: "Mesa Direct Lending", strategy: "Private credit", vintage: "2021-06", calledPct: 80, distPct: 30, gp: "Notice received", next: { type: "Distribution", date: "2027-01-15", pct: 3 },
+    lps: [["whitman", 4000000], ["okafor", 2000000]] },
+  { fund: "Pikes Peak Buyout V", strategy: "Private equity", vintage: "2025-07", calledPct: 15, distPct: 0, gp: "Notice received", next: { type: "Call", date: "2026-12-05", pct: 10 },
+    lps: [["lindqvist", 14000000], ["whitman", 10000000], ["brennan", 3000000]] },
+  { fund: "Continental Infrastructure II", strategy: "Infrastructure", vintage: "2022-10", calledPct: 55, distPct: 13.33, gp: "Estimated", next: { type: "Distribution", date: "2026-12-30", pct: 2.5 },
+    lps: [["lindqvist", 6000000], ["patel", 3000000]] },
+  { fund: "Ridgeline Real Estate IV", strategy: "Real estate", vintage: "2021-11", calledPct: 70, distPct: 23.64, gp: "Notice received", next: { type: "Call", date: "2026-11-30", pct: 5 },
+    lps: [["lindqvist", 5500000], ["brennan", 4000000], ["castillo", 2500000]] },
+];
+// Flat view (one row per client commitment), used by the spending summarizer and the data download
+const FUNDS = FUND_LIST.flatMap(F => F.lps.map(([hhId, commit]) => ({ hh: hhId, fund: F.fund, strategy: F.strategy, commit, calledPct: F.calledPct, dist: Math.round(commit * F.distPct / 100), next: { type: F.next.type, date: F.next.date, amt: Math.round(commit * F.next.pct / 100) }, status: F.gp })));
+
+
+/* =====================================================================
+   HELPERS
+   ===================================================================== */
+const $ = s => document.querySelector(s);
+const fmt$ = (n, d = 0) => (n < 0 ? "-" : "") + "$" + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtM = n => "$" + (n / 1e6).toFixed(n % 1e6 === 0 ? 1 : 2).replace(/\.?0+$/, m => m.length > 1 && m.startsWith(".") ? "" : m) + "M";
+const fmtMM = n => Math.abs(n) >= 1e6 ? "$" + (n / 1e6).toFixed(2) + "M" : "$" + (n / 1e3).toFixed(1) + "K";
+const fmtQty = n => n.toLocaleString("en-US");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const parseNum = s => parseFloat(String(s).replace(/[^0-9.\-]/g, ""));
+const days = iso => Math.round((new Date(iso + "T00:00:00") - AS_OF) / 864e5);
+const dateFmt = iso => new Date(iso + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 2200); }
+function stamp() { return "Run at " + new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
+function fillSelect(sel, items) { sel.innerHTML = items.map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(""); }
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Animated "agent is working" checklist, then callback
+function runSteps(out, steps, done) {
+  out.innerHTML = `<ul class="steps">${steps.map(s => `<li><span class="dot"></span>${esc(s)}</li>`).join("")}</ul>`;
+  const lis = [...out.querySelectorAll("li")];
+  let i = 0; const delay = reduceMotion ? 0 : 380;
+  (function next() {
+    if (i > 0) { lis[i - 1].className = "done"; lis[i - 1].querySelector(".dot").textContent = "✓"; }
+    if (i === lis.length) { setTimeout(done, reduceMotion ? 0 : 250); return; }
+    lis[i].className = "run"; i++; setTimeout(next, delay);
+  })();
+}
+
+/* =====================================================================
+   TABS
+   ===================================================================== */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function selectTab(btn) {
+  tabs.forEach(b => { const on = b === btn; b.setAttribute("aria-selected", on); const p = $("#" + b.getAttribute("aria-controls")); p.hidden = !on; p.classList.toggle("active", on); });
+  try { history.replaceState(null, "", "#" + btn.id); } catch (e) {}
+}
+tabs.forEach(b => b.addEventListener("click", () => selectTab(b)));
+const startTab = tabs.find(b => "#" + b.id === location.hash); if (startTab) selectTab(startTab);
+
+/* =====================================================================
+   1. POSITION EXTRACTOR
+   ===================================================================== */
+const SECTION_NAMES = ["Equities", "Exchange-Traded Funds", "Mutual Funds", "Fixed Income", "Alternative Investments", "Annuities", "Cash & Sweep"];
+const SHORT_SEC = { "Equities": "Equity", "Exchange-Traded Funds": "ETF", "Mutual Funds": "Fund", "Fixed Income": "Bond", "Alternative Investments": "Alternative", "Annuities": "Annuity", "Cash & Sweep": "Cash" };
+const money = (n, paren = true) => (n < 0 && paren ? "(" : "") + "$" + Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + (n < 0 && paren ? ")" : "");
+const q3 = n => n.toLocaleString("en-US", { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+const qn = n => Number.isInteger(n) ? n.toLocaleString("en-US") : q3(n);
+const W = 112;
+const padR = (s, n) => String(s).padEnd(n), padL = (s, n) => String(s).padStart(n);
+const rowMV = r => r.cash != null ? r.cash : r.mv != null ? r.mv : Math.round((r.par ? r.par * r.p / 100 : r.q * r.p) * 100) / 100;
+
+function statementText(id) {
+  const S = STATEMENTS[id];
+  const chunks = [];  // {acct, lines[]} ; wrapped rows and small blocks stay together across page breaks
+  const add = (acct, ...lines) => chunks.push({ acct, lines });
+  S.accounts.forEach((A, ai) => {
+    const total = A.sections.reduce((a, [, rows]) => a + rows.reduce((b, r) => b + rowMV(r), 0), 0);
+    const flows = A.activity.filter(t => t[1] === "WITHDRAWAL").reduce((a, t) => a + t[5], 0);
+    const change = Math.round(total * 0.0118 * 100) / 100, begin = total - change - flows;
+    add(A.acct, "", `ACCOUNT ${ai + 1} OF ${S.accounts.length}: ${A.title.toUpperCase()}  |  Account Number: ${A.acct}`, "=".repeat(W));
+    add(A.acct, "ACCOUNT SUMMARY", "",
+      padR("  Beginning Value on 09/01/2026", 60) + padL(money(begin), 20),
+      padR("  Deposits / Transfers In", 60) + padL(money(0), 20),
+      padR("  Withdrawals / Transfers Out", 60) + padL(money(flows), 20),
+      padR("  Change in Market Value", 60) + padL(money(change), 20),
+      padR("  Ending Value on 09/30/2026", 60) + padL(money(total), 20), "");
+    add(A.acct, "HOLDINGS", "-".repeat(W));
+    A.sections.forEach(([sec, rows]) => {
+      const colHead = sec === "Cash & Sweep" ? padR("Description", 60) + padL("Balance", 20)
+        : padR(sec === "Fixed Income" || sec === "Alternative Investments" ? "Description / CUSIP" : sec === "Annuities" ? "Description / Contract" : "Description (Symbol)", 40) + padL(sec === "Fixed Income" ? "Par Value" : sec === "Annuities" || sec === "Alternative Investments" ? "Units" : "Quantity", 14) + padL("Price", 11) + padL("Market Value", 15) + padL("Cost Basis", 15) + padL("Unreal. G/L", 14);
+      add(A.acct, sec.toUpperCase(), colHead);
+      rows.forEach(r => {
+        const mv = rowMV(r);
+        if (r.cash != null) { add(A.acct, padR("  BANK DEPOSIT SWEEP (CASH)", 60) + padL(money(r.cash), 20), "    Interest rate 2.15% APY. Balance is FDIC-insured through program banks."); return; }
+        const gl = Math.round((mv - r.cost) * 100) / 100;
+        const nums = padL(q3(r.par ? r.par : r.q), 14) + padL(r.par || r.contract ? r.p.toFixed(3) : r.p.toFixed(2), 11) + padL(money(mv), 15) + padL(money(r.cost), 15) + padL(money(gl), 14);
+        if (r.par) {
+          add(A.acct, "  " + r.d, padR(`    CUSIP ${r.cusip}`, 40) + nums, `    Accrued Interest ${money(r.accr)}   Coupon paid semiannually   Ratings: see disclosures`);
+        } else if (r.cusip || r.contract) {
+          add(A.acct, "  " + r.d, padR(r.cusip ? `    CUSIP ${r.cusip}` : `    CONTRACT ${r.contract}`, 40) + nums,
+            r.cusip ? "    Estimated value per sponsor as of 06/30/2026. Not traded on an exchange; liquidity is limited." : "    Value reported by the insurance carrier. Held away from this account; shown for information only.");
+        } else if (r.wrap) {
+          const words = r.d.split(" "), cut = Math.ceil(words.length / 2);
+          add(A.acct, "  " + words.slice(0, cut).join(" "), padR(`    ${words.slice(cut).join(" ")} (${r.id})`, 40) + nums);
+        } else {
+          add(A.acct, padR(`  ${r.d} (${r.id})`, 40) + nums);
+        }
+      });
+      add(A.acct, padR(`  Total ${sec}`, 65) + padL(money(rows.reduce((a, r) => a + rowMV(r), 0)), 15), "");
+    });
+    add(A.acct, padR("Total Account Value", 65) + padL(money(total), 15), "  (Market value excludes accrued interest of " + money(A.sections.flatMap(s => s[1]).reduce((a, r) => a + (r.accr || 0), 0)) + ")", "");
+    add(A.acct, "ACCOUNT ACTIVITY", padR("Date", 8) + padR("Activity", 17) + padR("Description", 46) + padL("Quantity", 13) + padL("Price", 11) + padL("Amount", 17), "-".repeat(W));
+    A.activity.forEach(([dt, type, desc, sym, qty, px, extra]) => {
+      const amt = type === "BOUGHT" || type === "REINVESTED" ? -qty * px : type === "SOLD" ? qty * px : px;
+      add(A.acct, padR(dt, 8) + padR(type, 17) + padR(`${desc} (${sym})`, 46) + padL(qty != null ? q3(qty) : "", 13) + padL(px != null && qty != null ? money(px) : "", 11) + padL(amt != null ? money(amt) : "", 17) + (extra ? "  " + extra : ""));
+    });
+    add(A.acct, "");
+  });
+  add(S.accounts[S.accounts.length - 1].acct, "IMPORTANT INFORMATION AND DISCLOSURES",
+    "Securities are offered through the custodian named above, a member of the Securities Investor Protection",
+    "Corporation (SIPC), which protects securities customers up to $500,000 (including $250,000 for claims for cash).",
+    "Market values are based on closing prices as of 09/30/2026 and may differ from amounts realized on sale.",
+    "Bond prices are quoted as a percentage of par value. Est. Annual Income (EAI) is an estimate only.",
+    "This statement is FICTIONAL and was created for a portfolio demo. It does not represent any real person or firm.");
+  // paginate
+  const PAGE = 44, pages = []; let cur = [], curAcct = null;
+  chunks.forEach(c => {
+    if (cur.length && (cur.length + c.lines.length > PAGE || c.acct !== curAcct)) { pages.push({ acct: curAcct, lines: cur }); cur = []; }
+    curAcct = c.acct; cur.push(...c.lines);
+  });
+  if (cur.length) pages.push({ acct: curAcct, lines: cur });
+  const out = [];
+  pages.forEach((pg, i) => {
+    out.push(padR(S.custodian, W - 14) + padL(`Page ${i + 1} of ${pages.length}`, 14),
+      padR("Statement Period: September 1, 2026 - September 30, 2026", W - 28) + padL("Questions? 1-800-555-0142", 28),
+      `${S.owner}  |  Account Number: ${pg.acct}`, "_".repeat(W));
+    if (i > 0 && pages[i - 1].acct === pg.acct && !pg.lines.some(l => l.startsWith("HOLDINGS"))) out.push("HOLDINGS (CONTINUED)");
+    out.push(...pg.lines, "", `  ${S.custodian.charAt(0) + S.custodian.slice(1).toLowerCase()}  ·  Member SIPC  ·  Please review this statement promptly and report any discrepancy.`, "~".repeat(W), "");
+  });
+  return out.join("\n");
+}
+
+function parseStatement(text) {
+  const lines = text.split("\n");
+  const res = { accounts: {}, order: [], pages: 0, noise: 0, lines: 0 };
+  let acct = null, mode = "skip", section = null, pending = "";
+  const A = () => { if (!res.accounts[acct]) { res.accounts[acct] = { positions: [], cash: [], subtotals: {}, total: null, activity: [] }; res.order.push(acct); } return res.accounts[acct]; };
+  const nums = s => (s.match(/\(?-?\$?[\d,]*\d(?:\.\d+)?\)?/g) || []).map(t => (t.startsWith("(") ? -1 : 1) * parseFloat(t.replace(/[^\d.]/g, "")));
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, ""), t = line.trim();
+    if (!t) continue;
+    res.lines++;
+    if (/Page \d+ of \d+/.test(t)) { res.pages++; res.noise++; pending = ""; continue; }
+    const am = t.match(/Account Number:\s*(XXXX-\d{4})/);
+    if (am) { acct = am[1]; A(); res.noise++; pending = ""; continue; }
+    if (/^(ACCOUNT SUMMARY|IMPORTANT INFORMATION|DISCLOSURES)/.test(t)) { mode = "skip"; res.noise++; continue; }
+    if (/^ACCOUNT ACTIVITY/.test(t)) { mode = "activity"; res.noise++; continue; }
+    if (/^HOLDINGS/.test(t)) { mode = "holdings"; res.noise++; continue; }
+    if (!acct) { res.noise++; continue; }
+    if (mode === "activity") {
+      const m = t.match(/^(\d{2}\/\d{2})\s+(BOUGHT|SOLD|TRANSFERRED OUT|TRANSFERRED IN)\s+(.*?)\(([A-Z][A-Z.]{0,5})\)\s+([\d,]+(?:\.\d+)?)/);
+      if (m) { const ex = t.match(/(TO|FROM)\s+(XXXX-\d{4})/); A().activity.push({ date: m[1], type: m[2], desc: m[3].trim(), id: m[4], qty: parseFloat(m[5].replace(/,/g, "")), other: ex ? ex[2] : null }); }
+      else res.noise++;
+      continue;
+    }
+    if (mode !== "holdings") { res.noise++; continue; }
+    const hd = SECTION_NAMES.find(s => s.toUpperCase() === t.toUpperCase());
+    if (hd) { section = hd; pending = ""; res.noise++; continue; }
+    const tot = t.match(/^Total (.+?)\s{2,}(\(?\$?[\d,]+\.\d{2}\)?)$/);
+    if (tot) { const v = nums(tot[2])[0]; if (tot[1] === "Account Value") A().total = v; else A().subtotals[tot[1]] = v; pending = ""; continue; }
+    const cus = t.match(/(?:CUSIP|CONTRACT)\s+([0-9A-Z]{6,12})/), sym = t.match(/\(([A-Z][A-Z.]{0,5})\)/);
+    const idm = cus || sym;
+    if (idm) {
+      const after = t.slice(t.indexOf(idm[0]) + idm[0].length), before = t.slice(0, t.indexOf(idm[0])).trim();
+      const n = nums(after);
+      if (sym && sym[1] === "CASH") { if (n.length) A().cash.push({ value: n[0], section }); pending = ""; continue; }
+      if (n.length >= 3) {
+        const desc = [pending, before].filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+        A().positions.push({ id: idm[1], bond: section === "Fixed Income", desc, section, qty: n[0], price: n[1], value: n[2], cost: n[3] });
+        pending = ""; continue;
+      }
+    }
+    if (/^[A-Z][A-Z0-9&.,%/()\- ]+$/.test(t) && !/\$/.test(t) && t.length > 3) { pending = t; continue; }
+    res.noise++; pending = "";
+  }
+  return res;
+}
+
+// Transfer-eligibility review: clear what can move in kind, flag only what the ACATS team must verify
+function review(id, P) {
+  const S = STATEMENTS[id], prop = S.custodian.split(" ")[0]; // e.g., GRANITE -> its own branded funds
+  const accounts = [], actions = [], ties = [];
+  for (const acct of P.order) {
+    const A = P.accounts[acct], rows = [];
+    for (const p of A.positions) {
+      const calc = p.bond ? p.qty * p.price / 100 : p.qty * p.price;
+      const mathOk = Math.abs(calc - p.value) <= Math.max(1, Math.abs(p.value) * 0.0005);
+      const m = SECURITY_MASTER[p.id], isFund = p.section === "Mutual Funds";
+      let status, cls, note = "", owner = "ACATS team";
+      if (p.section === "Annuities") { status = "1035 exchange"; cls = "bad"; note = "Annuities can't move through ACATS. Moving it requires a 1035 exchange with the insurance carrier; review surrender charges and riders with the client first."; owner = "Advisor + annuity desk"; }
+      else if (p.section === "Alternative Investments") { status = "Not ACATS-eligible"; cls = "bad"; note = "Non-traded REIT: not on an exchange, so it can't transfer through ACATS. Requires sponsor re-registration paperwork, or it stays at the old firm."; owner = "ACATS team + alternatives desk"; }
+      else if (m === "proprietary" || (!m && p.desc.startsWith(prop) && isFund)) { status = "Proprietary fund"; cls = "bad"; note = `${S.custodian.replace(/\.$/, "").toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}' own fund can't be held here. Options: sell before transfer (check the tax impact on ${money(p.value - (p.cost || 0))} of gain/loss) or leave it at the old firm.`; owner = "Advisor + client"; }
+      else if (!mathOk) { status = "Value mismatch"; cls = "bad"; note = `${p.bond ? "Par × price ÷ 100" : "Quantity × price"} = ${money(calc)}, but the statement prints ${money(p.value)} (${p.value < calc ? "understated" : "overstated"} by ${money(Math.abs(calc - p.value))}). Confirm the transfer value with the delivering firm.`; }
+      else if (/RESTRICTED|RULE 144/.test(p.desc)) { status = "Legal review"; cls = "warn"; note = "Restricted (Rule 144) shares. Transfer needs the legend removed or issuer counsel's approval before ACATS can process it."; owner = "ACATS team + legal"; }
+      else if (m === "foreign") { status = "Verify custody"; cls = "warn"; note = "Foreign ordinary share. Confirm we can custody it in this market, or convert to the ADR before transfer."; }
+      else if (m === "mmf-proprietary") { status = "Converts to cash"; cls = "info"; note = ""; }
+      else if (!m) { status = "Not on approved list"; cls = "warn"; note = /OTC|PINK/.test(p.desc) ? "OTC Pink security that isn't on our approved list. Verify it's DTC-eligible and that we're permitted to hold it." : p.bond ? "CUSIP not found in our security master (144A restricted bond). Verify eligibility and pricing source." : "Not in our security master. Verify before transfer."; }
+      else if (!isFund && !p.bond && !Number.isInteger(Math.round(p.qty * 1000) / 1000)) { const frac = p.qty - Math.floor(p.qty); status = "Fractional shares"; cls = "info"; note = `${qn(Math.floor(p.qty))} whole shares transfer in kind. The ${frac.toFixed(3)} fractional share (about ${money(frac * p.price)}) is sold and moves as cash.`; }
+      else { status = "Eligible"; cls = "ok"; }
+      rows.push({ ...p, status, cls, note, owner });
+      if (note && cls !== "info") actions.push({ acct, id: p.id, desc: p.desc, cls, status, note, owner, value: p.value });
+    }
+    for (const [sec, printed] of Object.entries(A.subtotals)) {
+      const sum = sec === "Cash & Sweep" ? A.cash.reduce((a, c) => a + c.value, 0) : A.positions.filter(p => p.section === sec).reduce((a, p) => a + p.value, 0);
+      ties.push({ acct, label: sec, ok: Math.abs(sum - printed) < 0.5, printed, sum });
+    }
+    if (A.total != null) {
+      const sum = A.positions.reduce((a, p) => a + p.value, 0) + A.cash.reduce((a, c) => a + c.value, 0);
+      ties.push({ acct, label: "Account total", ok: Math.abs(sum - A.total) < 0.5, printed: A.total, sum });
+    }
+    accounts.push({ acct, rows, cash: A.cash.reduce((a, c) => a + c.value, 0), value: A.positions.reduce((a, p) => a + p.value, 0) + A.cash.reduce((a, c) => a + c.value, 0) });
+  }
+  ties.filter(t => !t.ok).forEach(t => actions.push({ acct: t.acct, id: t.label, desc: "", cls: "bad", status: "Subtotal off", note: `Printed ${money(t.printed)}, but the extracted lines add up to ${money(t.sum)}. A line may be missing or mistyped.`, owner: "ACATS team", value: 0 }));
+  return { accounts, actions, ties };
+}
+
+function renderRecords(id) {
+  const ids = [];
+  STATEMENTS[id].accounts.forEach(A => A.sections.forEach(([sec, rows]) => rows.forEach(r => { if (r.id || r.cusip || r.contract) ids.push([r.id || r.cusip || r.contract, r.d, sec]); })));
+  const lbl = { eligible: ["Approved", "ok"], foreign: ["Approved, foreign market", "warn"], proprietary: ["Other firm's proprietary fund", "bad"], "mmf-proprietary": ["Other firm's money fund (liquidates)", "info"] };
+  $("#pe-records").innerHTML = `<table><thead><tr><th>Symbol / CUSIP</th><th>Description</th><th>Security master status</th></tr></thead><tbody>` +
+    ids.map(([s, d, sec]) => { const m = SECURITY_MASTER[s]; const [t, c] = m ? lbl[m] : sec === "Annuities" ? ["Insurance contract (not a security)", "bad"] : ["Not found", "warn"]; return `<tr><td><b>${s}</b></td><td>${esc(d)}</td><td><span class="chip ${c}">${t}</span></td></tr>`; }).join("") + `</tbody></table>`;
+}
+function loadPE() {
+  const id = $("#pe-hh").value;
+  $("#pe-text").value = statementText(id);
+  const S = STATEMENTS[id], n = $("#pe-text").value.split("\n").length;
+  $("#pe-src").textContent = `${S.custodian.replace(/\.$/, "")} · ${S.accounts.length} account${S.accounts.length > 1 ? "s" : ""} · ${n} lines`;
+  $("#pe-out").innerHTML = `<div class="empty">Click <b>Run agent</b> to extract every position and flag the ones that need the ACATS team.</div>`;
+  $("#pe-stamp").textContent = "";
+  renderRecords(id);
+}
+function renderPE(id, P, R) {
+  const all = R.accounts.flatMap(A => A.rows);
+  const npos = all.length, flagged = R.actions.length;
+  const clearedRows = all.filter(r => r.cls === "ok" || r.cls === "info");
+  const total = R.accounts.reduce((a, A) => a + A.value, 0);
+  const clearedVal = clearedRows.reduce((a, r) => a + r.value, 0) + R.accounts.reduce((a, A) => a + A.cash, 0);
+  const tiesOk = R.ties.filter(t => t.ok).length;
+  const acctTitle = acct => { const a = STATEMENTS[id].accounts.find(x => x.acct === acct); return a ? a.title : ""; };
+  const short = s => s.length > 36 ? s.slice(0, 34) + "…" : s;
+  $("#pe-out").innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="v">${P.pages}</div><div class="l">Pages read</div></div>
+      <div class="kpi"><div class="v">${npos}</div><div class="l">Positions extracted</div></div>
+      <div class="kpi"><div class="v" style="color:var(--ok)">${clearedRows.length}</div><div class="l">Cleared to transfer</div></div>
+      <div class="kpi"><div class="v" style="color:${flagged ? "var(--bad)" : "var(--ok)"}">${flagged}</div><div class="l">Need ACATS review</div></div>
+    </div>
+    <div class="headline">${flagged
+      ? `Only <b>${flagged} of ${npos}</b> positions ${flagged === 1 ? "needs" : "need"} the ACATS team. The other ${clearedRows.length} positions (<b>${money(clearedVal)}</b>, ${(clearedVal / total * 100).toFixed(0)}% of assets including cash) are cleared to transfer.`
+      : `All <b>${npos}</b> positions (<b>${money(total)}</b> including cash) are cleared to transfer in kind. Nothing needs the ACATS team.`}</div>
+    ${flagged ? `<h4 class="sec-h">Action list for the ACATS team</h4>
+    <div class="tbl-wrap" style="margin-bottom:16px"><table><thead><tr><th>Account</th><th>Security</th><th>Issue</th><th>What to do</th><th>Owner</th><th class="num">Value</th></tr></thead><tbody>
+      ${R.actions.map(a => `<tr><td style="white-space:nowrap">${a.acct}</td><td><b>${esc(a.id)}</b><div class="small">${esc(short(a.desc))}</div></td><td><span class="chip ${a.cls}">${esc(a.status)}</span></td><td>${esc(a.note)}</td><td class="small">${esc(a.owner)}</td><td class="num">${a.value ? money(a.value) : "—"}</td></tr>`).join("")}
+    </tbody></table></div>` : ""}
+    <details class="all-pos"${flagged ? "" : " open"}><summary>All ${npos} extracted positions by account</summary>
+    ${R.accounts.map(A => `
+      <div class="acct-hd"><span class="l"><b>${A.acct}</b> &nbsp;·&nbsp; ${esc(acctTitle(A.acct))}</span><span>${money(A.value)}</span></div>
+      <div class="tbl-wrap" style="margin-bottom:14px"><table><thead><tr><th>Security</th><th>Type</th><th class="num">Quantity / par</th><th class="num">Mkt value</th><th>Transfer status</th></tr></thead><tbody>
+      ${A.rows.map(r => `<tr><td><b>${r.id}</b><div class="small trunc" title="${esc(r.desc)}">${esc(short(r.desc || ""))}</div></td><td>${SHORT_SEC[r.section] || ""}</td><td class="num">${qn(r.qty)}</td><td class="num">${money(r.value)}</td><td><span class="chip ${r.cls}">${r.status}</span>${r.cls === "info" && r.note ? `<div class="small">${esc(r.note)}</div>` : r.status === "Converts to cash" ? `<div class="small">Liquidates to cash during transfer</div>` : ""}</td></tr>`).join("")}
+      ${A.cash ? `<tr><td><b>CASH</b><div class="small">Bank deposit sweep</div></td><td>Cash</td><td class="num">—</td><td class="num">${money(A.cash)}</td><td><span class="chip ok">Moves as cash</span></td></tr>` : ""}
+      </tbody></table></div>`).join("")}
+    </details>
+    <div class="notes"><h4>How the agent got here</h4><ul>
+      <li>Read ${P.pages} pages and skipped ${P.noise} lines of headers, footers, account summaries, activity, and disclosures.</li>
+      <li>Rebuilt descriptions that wrapped onto a second line, priced bonds as a percent of par, and left accrued interest out of market value.</li>
+      <li>Reconciled <b>${tiesOk} of ${R.ties.length}</b> section subtotals and account totals, so no position was missed.</li>
+      <li>Checked every position against the firm's security master and transfer rules (proprietary funds, alternatives, annuities, restricted and foreign shares, fractional shares).</li>
+    </ul></div>
+    <div style="margin-top:14px"><button class="btn primary" id="pe-push">Send action list to ACATS team</button></div>`;
+  $("#pe-push").onclick = () => toast(flagged ? `Action list with ${flagged} item${flagged > 1 ? "s" : ""} sent to the ACATS team (demo).` : "Transfer cleared. No action items to send (demo).");
+  $("#pe-stamp").textContent = stamp();
+}
+fillSelect($("#pe-hh"), PROSPECTS.map(h => [h.id, h.name]));
+$("#pe-hh").onchange = loadPE;
+$("#pe-reset").onclick = () => { loadPE(); toast("Statement reset"); };
+$("#pe-run").onclick = () => {
+  const id = $("#pe-hh").value, text = $("#pe-text").value;
+  runSteps($("#pe-out"), ["Reading every page of the statement", "Skipping headers, footers, summaries, activity, and disclosures", "Rebuilding descriptions that wrap across lines", "Extracting every holding by account and section", "Checking each line's math (bonds as % of par)", "Reconciling section subtotals and account totals", "Checking each position against the firm's security master and transfer rules", "Building the ACATS team's action list"],
+    () => {
+      const P = parseStatement(text);
+      if (!P.order.length || !P.order.some(a => P.accounts[a].positions.length)) { $("#pe-out").innerHTML = `<div class="empty">No holdings found. The agent looks for an "Account Number" line and a HOLDINGS section with rows like <code>APPLE INC (AAPL)  1,250.000  227.40  $284,250.00</code>.</div>`; return; }
+      renderPE(id, P, review(id, P));
+    });
+};
+loadPE();
+
+/* =====================================================================
+   2. PITCH BOOK CHECKER
+   ===================================================================== */
+let pbState = null;
+const FIELDS = [
+  ["asOf", "As-of date", v => v, "date"], ["total", "Total assets", v => "$" + v + "M", "m"],
+  ["ytd", "YTD return", v => v + "%", "pct"], ["bench", "Benchmark YTD", v => v + "%", "pct"],
+  ["accounts", "Accounts included", v => v, "int"],
+  ["equity", "Equity", v => v + "%", "pct"], ["fixed", "Fixed income", v => v + "%", "pct"], ["alts", "Alternatives", v => v + "%", "pct"], ["cash", "Cash", v => v + "%", "pct"],
+];
+const label = k => FIELDS.find(f => f[0] === k)[1];
+const show = (k, v) => FIELDS.find(f => f[0] === k)[2](v);
+function renderSlide() {
+  const s = pbState.slide, ed = k => `<span class="ed" contenteditable="true" spellcheck="false" data-k="${k}">${esc(show(k, s[k]))}</span>`;
+  const alloc = ["equity", "fixed", "alts", "cash"].map(k => `<div class="alloc-row"><span>${label(k)}</span><div class="alloc-bar"><i style="width:${Math.max(0, Math.min(100, s[k]))}%"></i></div><b style="text-align:right">${ed(k)}</b></div>`).join("");
+  $("#pb-slide").innerHTML = `
+    <div class="s-top"><div class="s-title">Portfolio Overview</div><div class="s-sub">As of ${ed("asOf")}</div></div>
+    <div class="s-sub" style="margin-top:-4px">${esc(pbState.title)}</div>
+    <div class="s-grid">
+      <div>
+        <div class="s-k">Total assets</div><div class="s-v">${ed("total")}</div>
+        <div style="display:flex;gap:26px;margin-top:10px">
+          <div><div class="s-k">YTD return</div><div class="s-v" style="font-size:22px">${ed("ytd")}</div></div>
+          <div><div class="s-k">Benchmark</div><div class="s-v" style="font-size:22px">${ed("bench")}</div></div>
+        </div>
+        <div class="s-k" style="margin-top:10px">Accounts included: <b style="color:var(--navy)">${ed("accounts")}</b></div>
+      </div>
+      <div><div class="s-k" style="margin-bottom:4px">Asset allocation</div>${alloc}</div>
+    </div>
+    <div class="foot">Mock client review slide for a portfolio demo. Fictional client and figures.</div>`;
+  $("#pb-slide").querySelectorAll(".ed").forEach(el => el.addEventListener("blur", () => {
+    const k = el.dataset.k, raw = el.textContent.trim();
+    pbState.slide[k] = k === "asOf" ? raw : parseNum(raw);
+    if (Number.isNaN(pbState.slide[k])) pbState.slide[k] = 0;
+    renderSlide();
+  }));
+  $("#pb-slide").querySelectorAll(".ed").forEach(el => el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); el.blur(); } }));
+}
+function renderSource() {
+  const src = pbState.source;
+  $("#pb-period").textContent = "Period ending " + pbState.period;
+  $("#pb-source").innerHTML = `<thead><tr><th>Figure</th><th class="num">Current period</th><th class="num">Prior quarter</th></tr></thead><tbody>` +
+    FIELDS.map(([k, l]) => `<tr><td>${l}</td><td class="num"><b>${esc(show(k, src[k]))}</b></td><td class="num">${pbState.prior[k] != null ? esc(show(k, pbState.prior[k])) : "—"}</td></tr>`).join("") + "</tbody>";
+}
+function loadPB() {
+  const id = $("#pb-hh").value, d = PITCH[id];
+  pbState = { id, title: d.title, period: d.period, slide: { ...d.slide }, source: d.source, prior: d.prior };
+  renderSlide(); renderSource();
+  $("#pb-out").innerHTML = `<div class="empty">Click <b>Check slide</b> to compare the pitch book against the reporting system.</div>`;
+  $("#pb-stamp").textContent = ""; $("#pb-fix").disabled = true;
+}
+function checkPB() {
+  const s = pbState.slide, src = pbState.source, pr = pbState.prior, res = [];
+  // as-of date
+  if (s.asOf !== src.asOf) res.push({ k: "asOf", cls: "bad", status: "Stale", why: `Slide is dated ${s.asOf}, but this review covers the period ending ${src.asOf}. The deck was likely rolled forward without updating the date.`, fix: src.asOf });
+  else res.push({ k: "asOf", cls: "ok", status: "Pass", why: "Matches the reporting period." });
+  for (const k of ["total", "ytd", "bench", "accounts"]) {
+    const tol = k === "accounts" ? 0 : 0.05;
+    if (Math.abs(s[k] - src[k]) <= tol) { res.push({ k, cls: "ok", status: "Pass", why: "Matches the reporting system." }); continue; }
+    const stale = pr[k] != null && Math.abs(s[k] - pr[k]) <= tol;
+    res.push({ k, cls: stale ? "warn" : "bad", status: stale ? "Stale" : "Mismatch",
+      why: stale ? `Shows ${show(k, s[k])}, which is last quarter's figure. Current value is ${show(k, src[k])}.` : `Shows ${show(k, s[k])}; the reporting system shows ${show(k, src[k])}.`, fix: src[k] });
+  }
+  const allocKeys = ["equity", "fixed", "alts", "cash"];
+  for (const k of allocKeys) {
+    if (Math.abs(s[k] - src[k]) <= 0.5) res.push({ k, cls: "ok", status: "Pass", why: "Matches the reporting system." });
+    else res.push({ k, cls: "bad", status: "Mismatch", why: `Shows ${s[k]}%; current allocation is ${src[k]}%.`, fix: src[k] });
+  }
+  const sum = allocKeys.reduce((a, k) => a + (+s[k] || 0), 0);
+  const sumRow = Math.abs(sum - 100) <= 0.5 ? { k: "_sum", cls: "ok", status: "Pass", why: "Allocation adds to 100%." } : { k: "_sum", cls: "bad", status: "Adds to " + sum + "%", why: `Allocation adds to ${sum}%, not 100%. A client will notice this.` };
+  return { res, sumRow };
+}
+function renderPB() {
+  const { res, sumRow } = checkPB(), all = [...res, sumRow];
+  const flags = all.filter(r => r.cls !== "ok");
+  $("#pb-out").innerHTML = `
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi"><div class="v">${all.length}</div><div class="l">Checks run</div></div>
+      <div class="kpi"><div class="v" style="color:var(--ok)">${all.length - flags.length}</div><div class="l">Passed</div></div>
+      <div class="kpi"><div class="v" style="color:${flags.length ? "var(--bad)" : "var(--ok)"}">${flags.length}</div><div class="l">Flags</div></div>
+    </div>
+    <div class="tbl-wrap"><table><thead><tr><th>Figure</th><th>Result</th><th>Why</th><th class="num">Suggested</th></tr></thead><tbody>
+    ${all.map(r => `<tr><td><b>${r.k === "_sum" ? "Allocation total" : label(r.k)}</b></td><td><span class="chip ${r.cls}">${esc(r.status)}</span></td><td>${esc(r.why)}</td><td class="num">${r.fix != null ? esc(show(r.k, r.fix)) : "—"}</td></tr>`).join("")}
+    </tbody></table></div>
+    <div class="notes"><h4>Agent summary</h4><ul>${flags.length ? `<li><b>${flags.length} issue${flags.length > 1 ? "s" : ""}</b> must be fixed before this deck goes to the client.</li>` + (res.some(r => r.status === "Stale") ? "<li>Several figures match <b>last quarter</b>, so the deck was likely rolled forward without a full refresh.</li>" : "") : "<li>Every figure matches the reporting system for this period. Cleared for advisor review.</li>"}</ul></div>`;
+  $("#pb-fix").disabled = !res.some(r => r.fix != null && r.cls !== "ok");
+  $("#pb-stamp").textContent = stamp();
+}
+fillSelect($("#pb-hh"), HOUSEHOLDS.map(h => [h.id, PITCH[h.id].title]));
+$("#pb-hh").onchange = loadPB;
+$("#pb-reset").onclick = () => { loadPB(); toast("Slide reset"); };
+$("#pb-run").onclick = () => runSteps($("#pb-out"), ["Reading slide figures", "Pulling current-period data from the reporting system", "Comparing each figure", "Checking against last quarter for stale numbers", "Validating the allocation total"], renderPB);
+$("#pb-fix").onclick = () => { const { res } = checkPB(); res.forEach(r => { if (r.fix != null && r.cls !== "ok") pbState.slide[r.k] = r.fix; }); renderSlide(); renderPB(); toast("Suggested fixes applied"); };
+loadPB();
+
+/* =====================================================================
+   3. SPENDING SUMMARIZER  (one client, ~25 accounts, hundreds of raw transactions)
+   ===================================================================== */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+// Merchant library: [raw text on statement, true category, min $, max $]
+const MERCHANTS = {
+  dining:   [["SQ *VAIL MTN DELI VAIL CO", 35, 140], ["TST* CORRIDOR 44 DENVER CO", 180, 1400], ["MATSUHISA DENVER CO", 220, 1800], ["OTOTO RESTAURANT DENVER", 90, 420], ["STARBUCKS STORE 08812", 6, 28], ["DOORDASH*SWEETGREEN", 24, 90], ["THE CHERRY CREEK GRILL", 110, 650]],
+  travel:   [["NETJETS SALES INC 614-239-5500", 18000, 46000], ["FOUR SEASONS RESORT MAUI WAILEA HI", 4200, 21000], ["DELTA AIR 0062384471923", 680, 6400], ["UNITED 0162384401127", 540, 5200], ["RITZ-CARLTON BACHELOR GULCH", 1900, 9800], ["UBER *TRIP HELP.UBER.COM", 18, 160], ["HERTZ RENT-A-CAR ASPEN", 240, 1100]],
+  shopping: [["NORDSTROM #0427 DENVER", 180, 3600], ["NEIMAN MARCUS CHERRY CRK", 420, 7800], ["AMAZON.COM*2K4RT61P2", 25, 640], ["APPLE.COM/BILL 866-712-7753", 2, 40], ["APPLE STORE #R114", 300, 3800], ["RH GALLERY DENVER", 1200, 14500], ["LULULEMON CHERRY CREEK", 90, 480]],
+  art:      [["SOTHEBYS INC NEW YORK NY", 8000, 62000], ["GALLERY 1261 DENVER", 2500, 18000], ["TIFFANY & CO DENVER", 1400, 12000]],
+  auto:     [["PORSCHE LITTLETON SERVICE", 600, 4800], ["TESLA SUPERCHARGER", 12, 60], ["SHELL OIL 57444211", 60, 140], ["DENVER PARKING MGMT", 18, 65]],
+  clubs:    [["CHERRY HILLS COUNTRY CLUB DUES", 2400, 6800], ["EQUINOX DENVER #148", 280, 420], ["ASPEN GLEN CLUB", 900, 3200]],
+  health:   [["CONCIERGE MD OF DENVER", 1500, 1800], ["CVS/PHARMACY #08812", 14, 160], ["CHILDRENS HOSP COLO PATIENT PMT", 120, 2400]],
+  kids:     [["CU BOOKSTORE BOULDER", 60, 420], ["CHIPOTLE 1734 BOULDER", 11, 32], ["STEAM PURCHASE 425-889-9642", 10, 70], ["TARGET 00018823 BOULDER", 25, 190], ["SPOTIFY USA", 11, 17]],
+};
+// Category rules the agent applies to raw descriptions (first match wins)
+const CAT_RULES = [
+  [/NETJETS|DELTA AIR|UNITED 0|RESORT|RITZ|HERTZ|UBER \*TRIP|MARRIOTT|AIRBNB/, "Travel"],
+  [/DELI|TST\*|MATSUHISA|RESTAURANT|STARBUCKS|DOORDASH|GRILL|CHIPOTLE/, "Dining"],
+  [/SOTHEBYS|GALLERY 1261|TIFFANY/, "Art & jewelry"],
+  [/NORDSTROM|NEIMAN|AMAZON|APPLE\.COM|APPLE STORE|RH GALLERY|LULULEMON|TARGET|STEAM|SPOTIFY|BOOKSTORE/, "Shopping"],
+  [/PORSCHE|TESLA|SHELL OIL|PARKING/, "Auto"],
+  [/COUNTRY CLUB|EQUINOX|ASPEN GLEN|CLUB DUES/, "Clubs & memberships"],
+  [/CONCIERGE MD|PHARMACY|PATIENT PMT/, "Health"],
+  [/MORTGAGE|LOAN SVCG|HOA|PROPERTY TAX|TREASURER|LANDSCAP|POOL SVC|XCEL ENERGY|DENVER WATER|COMCAST|SECURITY SYS|SNOWPLOW|PROPERTY MGMT/, "Homes & property"],
+  [/PAYROLL|ADP|NANNY|HOUSEKEEP|ESTATE MGR|PRIVATE CHEF/, "Household staff"],
+  [/TUITION|UNIVERSITY|ACADEMY|SCHOOL/, "Education"],
+  [/IRS USATAXPYMT|CO DEPT REVENUE|EST TAX/, "Taxes"],
+  [/CHUBB|PURE INSURANCE|INSURANCE|PREMIUM/, "Insurance"],
+  [/HOSPITAL CAMPAIGN|FOUNDATION GIFT|DAF CONTRIB|CHARITABLE|SYMPHONY|DENVER ART MUSEUM/, "Philanthropy"],
+  [/VENMO|ZELLE/, "Venmo / Zelle (uncategorized)"],
+  [/ATM WITHDRAWAL/, "Cash withdrawals"],
+  [/ADVISORY FEE|MARGIN INTEREST|WIRE FEE|SERVICE FEE|FOREIGN TRANSACTION FEE|ANNUAL FEE/, "Fees & interest"],
+];
+
+const SPEND_CLIENTS = {
+  hartley: {
+    label: "Hartley Family", banks: "First Front Range Bank, Granite Peak Securities, Summit Card Services, Aspen Trust Co.",
+    accounts: [
+      ["7731", "Joint Checking", "checking", "Joint", 412000], ["7748", "Robert Checking", "checking", "Robert", 96500], ["7752", "Claire Checking", "checking", "Claire", 88200],
+      ["8120", "Household Operating", "checking", "Household", 154300], ["6604", "Vail Property LLC", "checking", "Vail Property LLC", 61200], ["6611", "Ranch LLC Operating", "checking", "Ranch LLC", 74800],
+      ["2290", "Hartley Ventures LLC", "checking", "Hartley Ventures LLC", 228000], ["3301", "Emma Student Checking", "checking", "Kids", 4200], ["3302", "Jack Student Checking", "checking", "Kids", 2900],
+      ["3303", "Lily Checking", "checking", "Kids", 1800],
+      ["4410", "High-Yield Savings", "savings", "Joint", 520000], ["4415", "Tax Reserve Savings", "savings", "Joint", 210000],
+      ["1008", "Platinum Charge Card", "card", "Joint"], ["1015", "Sapphire Visa", "card", "Robert"], ["1022", "Signature Visa", "card", "Claire"],
+      ["1037", "Business Card", "card", "Hartley Ventures LLC"], ["1044", "Emma Card", "card", "Kids"], ["1051", "Jack Card", "card", "Kids"],
+      ["4417", "Trust Brokerage", "brokerage", "Trust"], ["8802", "Robert IRA", "brokerage", "Robert"], ["8803", "Claire IRA", "brokerage", "Claire"], ["5520", "Joint Brokerage", "brokerage", "Joint"],
+      ["6620", "529: Emma", "529", "Kids"], ["6621", "529: Lily", "529", "Kids"], ["9901", "Donor-Advised Fund", "daf", "Joint"], ["7010", "Securities-Backed Line", "loc", "Joint"],
+    ],
+    cards: [ // card, from-checking, [[merchant group, purchases per month]]
+      ["1008", "7731", [["dining", 22], ["travel", 9], ["shopping", 16], ["art", 1], ["clubs", 2], ["health", 2]]],
+      ["1015", "7748", [["dining", 12], ["travel", 6], ["auto", 10], ["shopping", 6], ["clubs", 1]]],
+      ["1022", "7752", [["shopping", 24], ["dining", 10], ["health", 3], ["art", 1]]],
+      ["1037", "2290", [["travel", 5], ["dining", 9], ["shopping", 4]]],
+      ["1044", "3301", [["kids", 18], ["dining", 4]]], ["1051", "3302", [["kids", 16], ["auto", 4]]],
+    ],
+    bills: [ // [checking, raw, amount, day]
+      ["7731", "ACH DEBIT FIRSTFRONTRANGE LOAN SVCG MORTGAGE", 21400, 1], ["6604", "ACH DEBIT ALPINE MORTGAGE VAIL CONDO", 8900, 1], ["6604", "VAIL VALLEY PROPERTY MGMT", 3800, 5],
+      ["6611", "ACH DEBIT RANCH LANDSCAPING + SNOWPLOW", 4200, 8], ["8120", "ADP PAYROLL HOUSEHOLD STAFF", 18600, 15], ["8120", "ADP PAYROLL HOUSEHOLD STAFF", 18600, 28],
+      ["8120", "XCEL ENERGY ACH PMT", 1450, 12], ["8120", "DENVER WATER ACH", 380, 14], ["8120", "COMCAST CABLE ACH", 420, 18], ["8120", "CHERRY HILLS POOL SVC", 950, 20],
+      ["7731", "CHUBB PERSONAL INSURANCE PREMIUM", 6200, 10], ["7748", "ZELLE TO M. ALVAREZ ESTATE MGR", 4500, 25], ["7752", "VENMO PAYMENT 1027883", 650, 9],
+      ["7731", "ATM WITHDRAWAL 1700 E 6TH AVE", 800, 11], ["4417", "ADVISORY FEE", 9800, 30], ["7010", "MARGIN INTEREST", 4120, 28],
+    ],
+    oneTimes: [
+      ["2026-07-08", "1008", "SALE NETJETS SALES INC 614-239-5500", 46200], ["2026-07-19", "1022", "SALE SOTHEBYS INC NEW YORK NY", 58400],
+      ["2026-08-14", "6620", "QUALIFIED WITHDRAWAL UNIVERSITY OF COLORADO TUITION", 31800], ["2026-08-14", "7731", "WIRE OUT ST MARYS ACADEMY TUITION", 30100],
+      ["2026-09-15", "4415", "IRS USATAXPYMT EST TAX Q3", 88000], ["2026-09-15", "4415", "CO DEPT REVENUE EST TAX Q3", 14500],
+      ["2026-09-22", "7731", "WIRE OUT DAF CONTRIB ...9901", 50000], ["2026-09-24", "9901", "GRANT: DENVER CHILDRENS HOSPITAL CAMPAIGN", 25000],
+      ["2026-09-26", "9901", "GRANT: DENVER ART MUSEUM", 10000], ["2026-08-02", "6611", "RANCH FENCE + BARN REPAIR CHECK 2231", 27500],
+      ["2026-07-30", "1022", "RETURN NORDSTROM #0427 DENVER", -2840], ["2026-08-21", "1008", "CREDIT FOUR SEASONS RESORT ADJ", -1950],
+    ],
+    transfers: [ // [from, to, amount, times]
+      ["7731", "4410", 75000, 3], ["4410", "7731", 120000, 2], ["7731", "8120", 42000, 3], ["7731", "6604", 14000, 3], ["7731", "6611", 9000, 3],
+      ["7748", "3302", 1500, 3], ["7752", "3301", 1500, 3], ["7752", "3303", 400, 3], ["2290", "7748", 35000, 3], ["7731", "6620", 2500, 3], ["7731", "6621", 2500, 3],
+      ["7731", "4415", 35000, 3], ["7010", "7731", 150000, 1], ["7731", "7010", 40000, 1], ["2290", "7731", 25000, 2],
+    ],
+    trades: [["4417", 14], ["5520", 9], ["8802", 6], ["8803", 5]],
+    calls: [["2026-08-20", "4417", "WIRE OUT ALPINE PEAK PARTNERS IV CAPITAL CALL #7", 600000]],
+    income: [["2290", "ACH CREDIT HARTLEY VENTURES DISTRIBUTION", 85000, 2], ["7731", "ACH CREDIT PAYROLL SUMMIT MEDICAL GRP", 28400, 3]],
+  },
+  okafor: {
+    label: "Okafor Household", scale: 0.35, banks: "Front Range Credit Union, Bluestem Brokerage, Summit Card Services",
+    accounts: [
+      ["2101", "Joint Checking", "checking", "Joint", 58200], ["2102", "Chidi Checking", "checking", "Chidi", 12400], ["2103", "Ada Checking", "checking", "Ada", 9800],
+      ["2110", "Emergency Savings", "savings", "Joint", 140000], ["2111", "Renovation Savings", "savings", "Joint", 61000], ["2112", "Tax Savings", "savings", "Joint", 38600],
+      ["3008", "Rewards Visa", "card", "Joint"], ["3015", "Travel Card", "card", "Chidi"], ["3022", "Cash Back Card", "card", "Ada"], ["3029", "Home Store Card", "card", "Joint"],
+      ["2093", "Joint Brokerage", "brokerage", "Joint"], ["2094", "Chidi 401(k) Rollover IRA", "brokerage", "Chidi"], ["2095", "Ada Roth IRA", "brokerage", "Ada"],
+      ["6630", "529: Tobi", "529", "Kids"], ["6631", "529: Ife", "529", "Kids"], ["2140", "HSA", "savings", "Joint", 18200],
+      ["2150", "Kids Custodial (UTMA)", "brokerage", "Kids"], ["2160", "Rental Property LLC", "checking", "Rental LLC", 22400],
+    ],
+    cards: [["3008", "2101", [["dining", 14], ["shopping", 12], ["kids", 8], ["health", 2]]], ["3015", "2102", [["travel", 3], ["dining", 6], ["auto", 8]]],
+            ["3022", "2103", [["shopping", 14], ["kids", 6], ["dining", 5]]], ["3029", "2101", [["shopping", 2]]]],
+    bills: [["2101", "ACH DEBIT FRCU MORTGAGE PMT", 7900, 1], ["2160", "ACH DEBIT RENTAL LOAN SVCG MORTGAGE", 2600, 1], ["2101", "XCEL ENERGY ACH PMT", 310, 12],
+            ["2101", "ST ANNES SCHOOL TUITION ACH", 3600, 5], ["2101", "PURE INSURANCE PREMIUM", 1100, 10], ["2102", "ZELLE TO J OKONKWO", 300, 20], ["2101", "ATM WITHDRAWAL KING SOOPERS", 200, 14],
+            ["2093", "ADVISORY FEE", 1450, 30]],
+    oneTimes: [["2026-08-03", "2111", "CHECK 1188 HIGHLANDS KITCHEN CO (CONTRACTOR DEPOSIT)", 32000], ["2026-09-15", "2111", "CHECK 1201 HIGHLANDS KITCHEN CO (FINAL)", 16500],
+               ["2026-09-15", "2112", "IRS USATAXPYMT EST TAX Q3", 21400], ["2026-08-10", "3029", "RH GALLERY DENVER", 8400], ["2026-07-12", "3015", "SALE FOUR SEASONS RESORT MAUI WAILEA HI", 7800]],
+    transfers: [["2101", "2110", 4000, 3], ["2101", "2111", 9000, 3], ["2101", "2112", 7000, 3], ["2102", "2101", 6000, 3], ["2103", "2101", 5000, 3], ["2101", "6630", 500, 3], ["2101", "6631", 500, 3], ["2101", "2140", 700, 3], ["2160", "2101", 1800, 3]],
+    trades: [["2093", 6], ["2094", 3], ["2095", 3], ["2150", 2]],
+    calls: [["2026-08-18", "2093", "WIRE OUT FRONT RANGE GROWTH III CAPITAL CALL #3", 350000]],
+    income: [["2101", "ACH CREDIT PAYROLL DENVER HEALTH", 16800, 3], ["2101", "ACH CREDIT PAYROLL LOCKHEED MARTIN", 14200, 3], ["2160", "ZELLE FROM TENANT RENT", 3400, 3]],
+  },
+  lindqvist: {
+    label: "Lindqvist Family & Foundation", banks: "Cedar Ridge Trust Co., Peak National Bank, Summit Card Services",
+    accounts: [
+      ["5101", "Family Joint Checking", "checking", "Joint", 186000], ["5102", "Erik Checking", "checking", "Erik", 41000], ["5103", "Ingrid Checking", "checking", "Ingrid", 38800],
+      ["5110", "Money Market Savings", "savings", "Joint", 5200000], ["5111", "Tax Reserve", "savings", "Joint", 240000],
+      ["7751", "Foundation Endowment", "brokerage", "Foundation"], ["3390", "Foundation Operating", "checking", "Foundation", 22184], ["5120", "Family Trust Brokerage", "brokerage", "Trust"],
+      ["5121", "Erik IRA", "brokerage", "Erik"], ["5122", "Ingrid IRA", "brokerage", "Ingrid"], ["5130", "Lake House LLC", "checking", "Lake House LLC", 33100],
+      ["5131", "Breckenridge Condo LLC", "checking", "Breck Condo LLC", 18700], ["5008", "Platinum Charge Card", "card", "Joint"], ["5015", "Erik Visa", "card", "Erik"],
+      ["5022", "Ingrid Visa", "card", "Ingrid"], ["5029", "Foundation Card", "card", "Foundation"], ["6640", "529: Astrid", "529", "Kids"], ["6641", "529: Nils", "529", "Kids"],
+      ["5140", "Astrid Checking", "checking", "Kids", 3100], ["5141", "Nils Checking", "checking", "Kids", 2600], ["9902", "Donor-Advised Fund", "daf", "Joint"], ["5150", "HELOC: Lake House", "loc", "Joint"],
+    ],
+    cards: [["5008", "5101", [["dining", 16], ["travel", 6], ["shopping", 10], ["clubs", 2], ["art", 1]]], ["5015", "5102", [["auto", 8], ["dining", 8], ["travel", 3]]],
+            ["5022", "5103", [["shopping", 14], ["health", 3], ["dining", 6]]], ["5029", "3390", [["dining", 3], ["travel", 2]]]],
+    bills: [["5101", "ACH DEBIT PEAK NATL LOAN SVCG MORTGAGE", 12800, 1], ["5130", "LAKE HOUSE PROPERTY MGMT", 2900, 5], ["5131", "SUMMIT COUNTY TREASURER PROPERTY TAX", 2100, 3],
+            ["5101", "ADP PAYROLL HOUSEHOLD STAFF", 9400, 15], ["3390", "ADP PAYROLL FOUNDATION STAFF", 7400, 15], ["5101", "CHUBB PERSONAL INSURANCE PREMIUM", 3900, 10],
+            ["3390", "GRANT DISBURSEMENT: COMMUNITY EDUCATION FOUNDATION GIFT", 62000, 20], ["3390", "GRANT: MOUNTAIN CONSERVANCY FOUNDATION GIFT", 24000, 22],
+            ["7751", "ADVISORY FEE", 11800, 30], ["5150", "HELOC INTEREST SERVICE FEE", 1650, 28]],
+    oneTimes: [["2026-09-12", "3390", "WIRE OUT DONOR GALA VENUE + CATERING CHARITABLE EVENT", 41200], ["2026-07-29", "3390", "WIRE OUT CAPITAL GRANT LIBRARY RENOVATION FOUNDATION GIFT", 150000],
+               ["2026-09-15", "5111", "IRS USATAXPYMT EST TAX Q3", 64000], ["2026-08-27", "5008", "SALE SOTHEBYS INC NEW YORK NY", 22000],
+               ["2026-09-02", "5101", "WIRE OUT DAF CONTRIB ...9902", 30000], ["2026-09-18", "9902", "GRANT: DENVER SYMPHONY", 15000]],
+    transfers: [["5110", "5101", 60000, 3], ["5101", "5130", 4000, 3], ["5101", "5131", 2500, 3], ["5101", "5111", 22000, 3], ["5102", "5140", 600, 3], ["5103", "5141", 600, 3],
+                ["7751", "3390", 95000, 3], ["5101", "6640", 2000, 3], ["5101", "6641", 2000, 3], ["5150", "5130", 40000, 1]],
+    trades: [["7751", 10], ["5120", 8], ["5121", 3], ["5122", 3]],
+    calls: [["2026-09-10", "7751", "WIRE OUT RIDGELINE REAL ESTATE IV CAPITAL CALL #11", 275000]],
+    income: [["5101", "ACH CREDIT LINDQVIST HOLDINGS DISTRIBUTION", 48000, 3], ["7751", "INTEREST CREDIT COPS 4.000%", 10000, 1]],
+  },
+};
+const TICKERS = ["VTI", "VXUS", "BND", "AAPL", "MSFT", "SPY", "AGG", "SCHD", "MUB", "QQQ"];
+
+function buildLedger(id) {
+  const C = SPEND_CLIENTS[id], r = rng(id.length * 7919 + id.charCodeAt(1) * 31), tx = [];
+  const pick = a => a[Math.floor(r() * a.length)], amt = (lo, hi) => Math.round((lo + r() * (hi - lo)) * 100) / 100;
+  const day = (m, d) => `2026-${String(m).padStart(2, "0")}-${String(Math.max(1, Math.min(28, d))).padStart(2, "0")}`;
+  const ref = () => Math.floor(r() * 9e8 + 1e8);
+  const add = (date, acct, desc, amount) => tx.push({ date, acct, desc, amt: Math.round(amount * 100) / 100 });
+  for (const m of [7, 8, 9]) {
+    // card purchases + one payment per card per month, paid from a checking account
+    for (const [card, payFrom, mix] of C.cards) {
+      let bill = 0;
+      for (const [grp, n] of mix) for (let i = 0; i < n + Math.floor(r() * 3) - 1; i++) {
+        const [raw, lo, hi] = pick(MERCHANTS[grp]); if (grp === "travel" && raw.startsWith("NETJETS") && r() < .8) continue;
+        const a = Math.round(amt(lo, hi) * (C.scale || 1) * 100) / 100; bill += a; add(day(m, 1 + Math.floor(r() * 28)), card, (r() < .5 ? "SALE " : "POS PURCHASE ") + raw, -a);
+      }
+      add(day(m + 1 > 9 ? 9 : m, 26), card, "PAYMENT RECEIVED - THANK YOU", bill);
+      add(day(m + 1 > 9 ? 9 : m, 26), payFrom, `${pick(["SUMMIT CARD EPAYMENT ACH PMT", "CRCARDPMT ONLINE PMT", "AUTOPAY CARD SERVICES"])} ...${card} W${ref()}`, -bill);
+    }
+    for (const [acct, raw, a, d] of C.bills) add(day(m, d), acct, raw + (raw.startsWith("ACH") ? ` PPD ID ${ref()}` : ""), -a * (raw.includes("XCEL") || raw.includes("WATER") ? (0.8 + r() * 0.5) : 1));
+    for (const [from, to, a, times] of C.transfers) if (m - 7 < times) {
+      const d = 2 + Math.floor(r() * 24), style = r();
+      if (style < .6) { add(day(m, d), from, `ONLINE TRANSFER TO ...${to} REF #IB${ref()}`, -a); add(day(m, d), to, `ONLINE TRANSFER FROM ...${from} REF #IB${ref()}`, a); }
+      else { add(day(m, d), from, `WIRE OUT FED REF ${ref()} BNF ACCT ...${to}`, -a); add(day(m, d), to, `WIRE IN FED REF ${ref()} ORIG ACCT ...${from}`, a); }
+    }
+    for (const [acct, n] of C.trades) for (let i = 0; i < Math.ceil(n / 3); i++) {
+      const t = pick(TICKERS), q = 10 + Math.floor(r() * 400), px = amt(30, 600), buy = r() < .62;
+      add(day(m, 2 + Math.floor(r() * 26)), acct, `${buy ? "BOUGHT" : "SOLD"} ${q} ${t} @ ${px.toFixed(2)}`, (buy ? -1 : 1) * q * px);
+      if (r() < .4) add(day(m, 15 + Math.floor(r() * 12)), acct, `DIVIDEND ${t}`, amt(80, 2400));
+    }
+    for (const [acct, raw, a, times] of C.income) if (m - 7 < times) add(day(m, 15), acct, raw, a);
+  }
+  for (const [date, acct, raw, a] of C.oneTimes) add(date, acct, raw, -a);
+  for (const [date, acct, raw, a] of C.calls) add(date, acct, raw, -a);
+  return tx.sort((a, b) => a.date.localeCompare(b.date) || a.acct.localeCompare(b.acct));
+}
+
+// The agent: classify every raw line, remove what isn't really money leaving the family, categorize the rest
+function classify(id, tx) {
+  const C = SPEND_CLIENTS[id], own = new Set(C.accounts.map(a => a[0])), type = Object.fromEntries(C.accounts.map(a => [a[0], a[2]]));
+  return tx.map(t => {
+    const d = t.desc, last4 = (d.match(/\.\.\.(\d{4})/) || [])[1];
+    let kind, cat = null, why;
+    if (t.amt > 0 && /PAYMENT RECEIVED/.test(d)) { kind = "card-pay"; why = "Card payment received"; }
+    else if (/EPAYMENT|CRCARDPMT|AUTOPAY CARD/.test(d) && last4 && own.has(last4)) { kind = "card-pay"; why = `Pays the client's own card ...${last4}; purchases already counted on the card`; }
+    else if (/^(ONLINE TRANSFER|WIRE OUT FED|WIRE IN FED)/.test(d) && last4 && own.has(last4)) { kind = "transfer"; why = `Moves money to/from the client's own account ...${last4}`; }
+    else if (/CAPITAL CALL/.test(d)) { kind = "invest"; why = "Capital call: an investment, not spending"; }
+    else if (/^(BOUGHT|SOLD) /.test(d)) { kind = "invest"; why = "Securities trade: an investment, not spending"; }
+    else if (/^DIVIDEND|INTEREST CREDIT|ACH CREDIT|ZELLE FROM/.test(d)) { kind = "income"; why = "Money coming in"; }
+    else if (/DAF CONTRIB/.test(d) && last4 && own.has(last4)) { kind = "spend"; cat = "Philanthropy"; why = "Gift to the donor-advised fund (counted once, here)"; }
+    else if (type[t.acct] === "daf" && /^GRANT/.test(d)) { kind = "daf-grant"; why = "Grant from the DAF; the gift was already counted when the DAF was funded"; }
+    else if (/^RETURN |^CREDIT .*ADJ/.test(d)) { kind = "spend"; why = "Refund reduces spending"; }
+    else { kind = "spend"; }
+    if (kind === "spend" && !cat) { const rule = CAT_RULES.find(([rx]) => rx.test(d)); cat = rule ? rule[1] : /TUITION/.test(d) ? "Education" : /CHECK \d+/.test(d) ? "Homes & property" : "Other"; }
+    return { ...t, kind, cat, why };
+  });
+}
+
+function loadSP() {
+  const id = $("#sp-hh").value, C = SPEND_CLIENTS[id], tx = buildLedger(id);
+  const byAcct = {}; tx.forEach(t => { const a = byAcct[t.acct] = byAcct[t.acct] || { n: 0, out: 0, inn: 0 }; a.n++; if (t.amt < 0) a.out -= t.amt; else a.inn += t.amt; });
+  $("#sp-count").textContent = `${C.accounts.length} accounts · ${tx.length.toLocaleString()} transactions`;
+  $("#sp-accts").innerHTML = `<table><thead><tr><th>Account</th><th>Type</th><th>Owner / entity</th><th class="num">Txns</th><th class="num">Money out</th><th class="num">Money in</th></tr></thead><tbody>` +
+    C.accounts.map(([n, name, type, owner]) => { const a = byAcct[n] || { n: 0, out: 0, inn: 0 }; return `<tr><td><b>...${n}</b> ${esc(name)}</td><td>${type === "loc" ? "credit line" : type}</td><td>${esc(owner)}</td><td class="num">${a.n}</td><td class="num">${fmt$(a.out)}</td><td class="num">${fmt$(a.inn)}</td></tr>`; }).join("") +
+    `</tbody><tfoot><tr><td colspan="3">All accounts</td><td class="num">${tx.length.toLocaleString()}</td><td class="num">${fmt$(Object.values(byAcct).reduce((a, x) => a + x.out, 0))}</td><td class="num">${fmt$(Object.values(byAcct).reduce((a, x) => a + x.inn, 0))}</td></tr></tfoot></table>`;
+  const sel = $("#sp-filter"); fillSelect(sel, [["all", "All accounts"], ...C.accounts.map(([n, name]) => [n, `...${n} ${name}`])]);
+  sel.onchange = () => renderLedger(tx);
+  renderLedger(tx);
+  $("#sp-out").innerHTML = `<div class="empty">Click <b>Summarize</b> to consolidate every account and find out what's really going out the door.</div>`; $("#sp-stamp").textContent = "";
+}
+function renderLedger(tx) {
+  const f = $("#sp-filter").value, rows = tx.filter(t => f === "all" || t.acct === f);
+  $("#sp-tx").innerHTML = `<table><thead><tr><th>Date</th><th>Acct</th><th>Description (as it appears)</th><th class="num">Amount</th></tr></thead><tbody>` +
+    rows.slice(0, 400).map(t => `<tr><td style="white-space:nowrap">${t.date.slice(5).replace("-", "/")}</td><td>...${t.acct}</td><td class="mono">${esc(t.desc)}</td><td class="num" style="color:${t.amt < 0 ? "var(--text)" : "var(--ok)"}">${t.amt < 0 ? "-" : "+"}${fmt$(Math.abs(t.amt), 2)}</td></tr>`).join("") +
+    (rows.length > 400 ? `<tr><td colspan="4" class="small" style="text-align:center">Showing 400 of ${rows.length} lines. Filter by account to see more.</td></tr>` : "") + `</tbody></table>`;
+}
+function renderSP() {
+  const id = $("#sp-hh").value, C = SPEND_CLIENTS[id], tx = classify(id, buildLedger(id));
+  const out = tx.filter(t => t.amt < 0), gross = -out.reduce((a, t) => a + t.amt, 0);
+  const sumK = k => -out.filter(t => t.kind === k).reduce((a, t) => a + t.amt, 0);
+  const transfers = sumK("transfer"), cardpay = sumK("card-pay"), invest = sumK("invest"), daf = sumK("daf-grant");
+  const spendTx = tx.filter(t => t.kind === "spend"), refunds = spendTx.filter(t => t.amt > 0).reduce((a, t) => a + t.amt, 0);
+  const trueSpend = -spendTx.reduce((a, t) => a + t.amt, 0);
+  const monthly = trueSpend / 3;
+  const byCat = {}; spendTx.forEach(t => { const c = byCat[t.cat] = byCat[t.cat] || { v: 0, n: 0 }; c.v -= t.amt; c.n++; });
+  const cats = Object.entries(byCat).sort((a, b) => b[1].v - a[1].v), maxC = cats[0][1].v;
+  const owner = Object.fromEntries(C.accounts.map(a => [a[0], a[3]])), byOwner = {};
+  spendTx.forEach(t => byOwner[owner[t.acct]] = (byOwner[owner[t.acct]] || 0) - t.amt);
+  const owners = Object.entries(byOwner).sort((a, b) => b[1] - a[1]), maxO = owners[0][1];
+  const months = { "07": 0, "08": 0, "09": 0 }; spendTx.forEach(t => months[t.date.slice(5, 7)] -= t.amt);
+  const big = spendTx.filter(t => t.amt <= -20000).sort((a, b) => a.amt - b.amt).slice(0, 8);
+  const disc = big.find(t => !/Taxes|Education|Philanthropy|Homes/.test(t.cat));
+  const cash = C.accounts.filter(a => a[2] === "checking" || a[2] === "savings").reduce((a, x) => a + (x[4] || 0), 0);
+  const calls = FUNDS.filter(f => f.hh === id && f.next.type === "Call" && days(f.next.date) <= 120).sort((a, b) => a.next.date.localeCompare(b.next.date));
+  const callTotal = calls.reduce((a, f) => a + f.next.amt, 0), coverage = cash / monthly, after = (cash - callTotal) / monthly, tight = after < 6;
+  const p2p = byCat["Venmo / Zelle (uncategorized)"], other = byCat["Other"];
+  const wf = [["Gross money out of all accounts", gross, "navy"], ["Transfers between the client's own accounts", -transfers, "cut"], ["Credit card payments (purchases already counted on the cards)", -cardpay, "cut"],
+    ["Investments: securities purchases and capital calls", -invest, "cut"], ["DAF grants (gift already counted when the DAF was funded)", -daf, "cut"], ["Refunds and credits", -refunds, "cut"], ["True spending", trueSpend, "blue"]];
+  const mon = { "07": "July", "08": "August", "09": "September" };
+  const bigMonth = Object.entries(months).sort((a, b) => b[1] - a[1])[0][0];
+  $("#sp-out").innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="v">${C.accounts.length}</div><div class="l">Accounts consolidated</div></div>
+      <div class="kpi"><div class="v">${tx.length.toLocaleString()}</div><div class="l">Transactions read</div></div>
+      <div class="kpi"><div class="v">${fmtMM(gross)}</div><div class="l">Gross money out</div></div>
+      <div class="kpi"><div class="v" style="color:var(--blue)">${fmtMM(trueSpend)}</div><div class="l">True spending</div></div>
+    </div>
+    <div class="headline">Across ${C.accounts.length} accounts, <b>${fmt$(gross)}</b> left the accounts in Q3, but only <b>${fmt$(trueSpend)}</b> (${(trueSpend / gross * 100).toFixed(0)}%) was real spending. The rest was money moving between the family's own accounts, card payments, and investments.</div>
+    <h4 class="sec-h">From gross outflows to true spending</h4>
+    <div class="wf">${wf.map(([l, v, c]) => `<div class="wf-row ${c}"><span>${l}</span><div class="track"><div class="fill" style="width:${(Math.abs(v) / gross * 100).toFixed(1)}%"></div></div><b class="num">${v < 0 ? "−" : ""}${fmt$(Math.abs(v))}</b></div>`).join("")}</div>
+    <div class="grid2" style="margin-top:18px;gap:18px">
+      <div><h4 class="sec-h">True spending by category</h4><div class="bars">${cats.map(([c, o]) => `<div class="row"><span>${esc(c)}</span><div class="track"><div class="fill" style="width:${(o.v / maxC * 100).toFixed(1)}%"></div></div><b class="num" style="text-align:right">${fmt$(o.v)}</b></div>`).join("")}</div></div>
+      <div><h4 class="sec-h">Who's spending (by owner / entity)</h4><div class="bars">${owners.map(([o, v]) => `<div class="row"><span>${esc(o)}</span><div class="track"><div class="fill" style="width:${(v / maxO * 100).toFixed(1)}%"></div></div><b class="num" style="text-align:right">${fmt$(v)}</b></div>`).join("")}</div>
+        <h4 class="sec-h" style="margin-top:14px">By month</h4><div class="bars">${Object.entries(months).map(([m, v]) => `<div class="row"><span>${mon[m]}</span><div class="track"><div class="fill" style="width:${(v / Math.max(...Object.values(months)) * 100).toFixed(1)}%"></div></div><b class="num" style="text-align:right">${fmt$(v)}</b></div>`).join("")}</div></div>
+    </div>
+    <h4 class="sec-h" style="margin-top:18px">Largest single outflows (true spending)</h4>
+    <div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Account</th><th>Raw description</th><th>Category</th><th class="num">Amount</th></tr></thead><tbody>
+      ${big.map(t => `<tr><td>${dateFmt(t.date)}</td><td>...${t.acct}</td><td class="mono">${esc(t.desc)}</td><td>${esc(t.cat)}</td><td class="num">${fmt$(-t.amt)}</td></tr>`).join("")}</tbody></table></div>
+    <div class="brief">
+      <h4>CSA brief: ${esc(C.label)}</h4>
+      <p><b>Spending.</b> True spending was <b>${fmt$(trueSpend)}</b> in Q3, about <b>${fmt$(Math.round(monthly))} per month</b>, across ${C.accounts.length} accounts at ${esc(C.banks.replace(/\.$/, ""))}. Top categories: ${cats.slice(0, 3).map(([c, o]) => `${c.toLowerCase()} (${fmt$(o.v)})`).join(", ")}. ${owners[0][0]} accounts drove the most spending (${fmt$(owners[0][1])}). The heaviest month was ${mon[bigMonth]}.</p>
+      <p><b>What we filtered out.</b> ${fmt$(transfers)} in transfers between the family's own accounts, ${fmt$(cardpay)} in card payments that would have double-counted purchases, and ${fmt$(invest)} in trades and capital calls. ${daf ? `${fmt$(daf)} in DAF grants was not double-counted. ` : ""}${p2p ? `${fmt$(p2p.v)} in Venmo/Zelle payments can't be categorized from the description; worth asking the client what they cover.` : ""}</p>
+      <p><b>Liquidity.</b> Cash across checking and savings is <b>${fmt$(cash)}</b>, about <b>${coverage.toFixed(1)} months</b> of spending at this pace. ${calls.length ? `Upcoming capital calls total <b>${fmt$(callTotal)}</b> (${calls.map(f => `${esc(f.fund)}, ${fmt$(f.next.amt)} on ${dateFmt(f.next.date)}`).join("; ")}). ${after > 0 ? `After those, cash covers about <b>${after.toFixed(1)} months</b>` : `Those calls exceed available cash by <b>${fmt$(callTotal - cash)}</b>`}${tight ? ` <span class="chip bad">Below 6-month target</span>` : ` <span class="chip ok">Above 6-month target</span>`}.` : "No capital calls are expected in the next 120 days."}</p>
+      <p><b>Before the fund-raising conversation.</b> ${tight ? "Liquidity is tight once upcoming calls are funded. Don't lead with a new commitment; first confirm how the next calls will be funded (cash, the credit line, or selling securities) and whether this spending pace will continue." : "Liquidity is comfortable even after upcoming calls. A new commitment is reasonable to discuss; confirm any large planned expenses first."} ${disc ? `Ask whether large one-time purchases, such as the ${fmt$(-disc.amt)} ${disc.cat.toLowerCase()} charge on ${dateFmt(disc.date)}, are likely to repeat.` : ""}</p>
+    </div>
+    <div class="small" style="margin-top:8px">Brief generated from fictional transactions. A person reviews every brief before it's used.</div>`;
+  $("#sp-stamp").textContent = stamp();
+}
+fillSelect($("#sp-hh"), HOUSEHOLDS.map(h => [h.id, SPEND_CLIENTS[h.id].label]));
+$("#sp-hh").onchange = loadSP;
+$("#sp-run").onclick = () => runSteps($("#sp-out"), ["Loading every account for this client", "Reading each raw transaction line", "Matching transfers between the client's own accounts", "Pairing card payments with the purchases they pay for", "Separating trades and capital calls from spending", "Avoiding double counts (DAF grants, refunds)", "Categorizing what's left from raw merchant text", "Checking liquidity against upcoming capital calls", "Writing the CSA brief"], renderSP);
+loadSP();
+
+/* =====================================================================
+   4. CAPITAL CALL TRACKER  (organized by fund → every client in the fund)
+   ===================================================================== */
+const GP_STATUSES = ["Notice received", "Estimated", "Awaiting GP update"];
+const CLIENT_STATUSES = ["Not started", "Client notified", "Funding arranged", "Funded"];
+const DIST_STATUSES = ["Expected", "Notice received", "Received"];
+const clientName = id => (HOUSEHOLDS.find(h => h.id === id) || {}).name || (EXTRA_CLIENTS[id] || {}).name || id;
+const clientAccounts = id => SPEND_CLIENTS[id] ? SPEND_CLIENTS[id].accounts : EXTRA_CLIENTS[id].accounts;
+const DEFAULT_PLAN = { // what the CSA had already filled in (mock)
+  "Alpine Peak Partners IV|hartley": { status: "Client notified", source: "4410", raise: "No" },
+  "Alpine Peak Partners IV|whitman": { status: "Funding arranged", source: "3310", raise: "No" },
+  "Alpine Peak Partners IV|brennan": { status: "Client notified", source: "1110", raise: "No" },
+  "Alpine Peak Partners IV|okafor": { status: "Not started", source: "", raise: "Yes", note: "Cash is committed to Front Range call; discuss selling AGG." },
+  "Front Range Growth III|okafor": { status: "Client notified", source: "", raise: "Yes" },
+  "Front Range Growth III|patel": { status: "Funding arranged", source: "4410", raise: "No" },
+  "Front Range Growth III|castillo": { status: "Client notified", source: "2210", raise: "No" },
+  "Pikes Peak Buyout V|lindqvist": { status: "Client notified", source: "5110", raise: "No" },
+  "Pikes Peak Buyout V|whitman": { status: "Funding arranged", source: "3310", raise: "No" },
+  "Ridgeline Real Estate IV|lindqvist": { status: "Funded", source: "5110", raise: "No" },
+  "Ridgeline Real Estate IV|brennan": { status: "Funding arranged", source: "1101", raise: "No" },
+};
+const fundTotals = F => {
+  const commit = F.lps.reduce((a, l) => a + l[1], 0);
+  return { commit, called: commit * F.calledPct / 100, unfunded: commit * (1 - F.calledPct / 100), dist: commit * F.distPct / 100, nextAmt: commit * F.next.pct / 100, d: days(F.next.date) };
+};
+// Deterministic fund-level call / distribution history (as % of commitment, so it applies to every client in the fund)
+function fundHistory(F) {
+  const r = rng(F.fund.length * 131 + F.calledPct * 7), out = [];
+  const [vy, vm] = F.vintage.split("-").map(Number);
+  const start = new Date(vy, vm - 1, 15), end = new Date(2026, 9, 15);
+  const quarters = Math.max(2, Math.round((end - start) / (91 * 864e5)));
+  const nCalls = Math.min(quarters, Math.max(2, Math.round(F.calledPct / 9)));
+  const w = Array.from({ length: nCalls }, (_, i) => (nCalls - i) * (0.6 + r())), ws = w.reduce((a, b) => a + b, 0);
+  let cum = 0;
+  w.forEach((x, i) => {
+    const q = Math.floor(i * quarters / nCalls), due = new Date(start.getTime() + q * 91 * 864e5 + Math.floor(r() * 20) * 864e5);
+    const pct = i === nCalls - 1 ? Math.round((F.calledPct - cum) * 100) / 100 : Math.round(F.calledPct * x / ws * 4) / 4;
+    cum += pct; out.push({ date: due.toISOString().slice(0, 10), type: "Call", pct, cumPct: cum, notice: 10 + Math.floor(r() * 12), late: r() < 0.25 ? F.lps[Math.floor(r() * F.lps.length)][0] : null });
+  });
+  if (F.distPct > 0) {
+    const nD = Math.max(1, Math.round(F.distPct / 6)); let dc = 0;
+    for (let i = 0; i < nD; i++) {
+      const due = new Date(end.getTime() - (nD - i) * 110 * 864e5 + Math.floor(r() * 30) * 864e5);
+      const pct = i === nD - 1 ? Math.round((F.distPct - dc) * 100) / 100 : Math.round(F.distPct / nD * 4) / 4; dc += pct;
+      out.push({ date: due.toISOString().slice(0, 10), type: "Distribution", pct });
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+function fundingSources(id) {
+  return clientAccounts(id).filter(a => ["checking", "savings", "brokerage", "loc"].includes(a[2]) && !/Kids/.test(a[3]))
+    .map(([n, name, type, , bal]) => ({ n, label: `${type === "brokerage" ? "Sell from" : type === "loc" ? "Draw on" : "Wire from"} ...${n} ${name}`, type, bal: bal ?? null }));
+}
+let ccPlan = {};
+try { ccPlan = JSON.parse(localStorage.getItem("cc-plan2") || "{}"); } catch (e) { ccPlan = {}; }
+const pkey = (F, id) => `${F.fund}|${id}`;
+const planFor = (F, id) => ({ status: F.next.type === "Call" ? "Not started" : "Expected", source: "", raise: "", note: "", ...(DEFAULT_PLAN[pkey(F, id)] || {}), ...(ccPlan[pkey(F, id)] || {}) });
+let gpPlan = {};
+try { gpPlan = JSON.parse(localStorage.getItem("cc-gp") || "{}"); } catch (e) { gpPlan = {}; }
+const gpFor = F => gpPlan[F.fund] || F.gp;
+function savePlan() { try { localStorage.setItem("cc-plan2", JSON.stringify(ccPlan)); localStorage.setItem("cc-gp", JSON.stringify(gpPlan)); } catch (e) {} }
+let ccOpen = new Set(), ccHist = new Set(FUND_LIST.map(F => F.fund));
+fillSelect($("#cc-hh"), [["all", "All clients"], ...[...new Set(FUND_LIST.flatMap(F => F.lps.map(l => l[0])))].map(id => [id, clientName(id)]).sort((a, b) => a[1].localeCompare(b[1]))]);
+fillSelect($("#cc-st"), [["all", "All strategies"], ...[...new Set(FUND_LIST.map(F => F.strategy))].map(s => [s, s])]);
+function clientRow(F, id, commit) {
+  const plan = planFor(F, id), isCall = F.next.type === "Call", amt = commit * F.next.pct / 100;
+  const src = fundingSources(id).find(s => s.n === plan.source);
+  const short = isCall && src && src.bal != null && src.bal < amt ? amt - src.bal : 0;
+  const needs = isCall && plan.status !== "Funded" && (!plan.source || plan.raise === "Yes" || short > 0);
+  return { id, name: clientName(id), commit, called: commit * F.calledPct / 100, unfunded: commit * (1 - F.calledPct / 100), amt, plan, src, short, needs };
+}
+function ccData() {
+  const hhF = $("#cc-hh").value, stF = $("#cc-st").value, win = +$("#cc-win").value, act = $("#cc-act").checked;
+  return FUND_LIST.filter(F => (stF === "all" || F.strategy === stF) && days(F.next.date) <= win)
+    .map(F => ({ F, t: fundTotals(F), rows: F.lps.map(([id, c]) => clientRow(F, id, c)).filter(r => (hhF === "all" || r.id === hhF) && (!act || r.needs)) }))
+    .filter(g => g.rows.length).sort((a, b) => a.F.next.date.localeCompare(b.F.next.date));
+}
+function historyPanel(F, t) {
+  const H = fundHistory(F), calls = H.filter(x => x.type === "Call"), dists = H.filter(x => x.type === "Distribution");
+  const avgPct = calls.reduce((a, c) => a + c.pct, 0) / calls.length, avgNotice = calls.reduce((a, c) => a + c.notice, 0) / calls.length;
+  const Wd = 560, Ht = 150, pad = 28, n = H.length, bw = Math.max(6, Math.min(26, (Wd - pad * 2) / n - 6)), maxP = Math.max(...H.map(x => x.pct));
+  const x = i => n === 1 ? Wd / 2 : pad + i * ((Wd - pad * 2) / (n - 1));
+  const bars = H.map((e, i) => { const hgt = e.pct / maxP * (Ht - 50); return `<rect x="${x(i) - bw / 2}" y="${Ht - 22 - hgt}" width="${bw}" height="${hgt}" fill="${e.type === "Call" ? "#002B51" : "#1E7B4F"}"><title>${e.type}: ${e.pct}% of commitment on ${dateFmt(e.date)}</title></rect>`; }).join("");
+  let cum = 0; const line = H.map((e, i) => { if (e.type === "Call") cum += e.pct; return `${x(i)},${(Ht - 22) - (cum / 100) * (Ht - 40)}`; }).join(" ");
+  const yrs = H.map((e, i) => i === 0 || e.date.slice(0, 4) !== H[i - 1].date.slice(0, 4) ? `<text x="${x(i)}" y="${Ht - 6}" font-size="10" text-anchor="middle" fill="#5F6B7A">${e.date.slice(0, 4)}</text>` : "").join("");
+  return `<div class="hist">
+    <div class="hist-kpis">
+      <div><b>${calls.length}</b><span>calls since ${F.vintage.slice(0, 4)}</span></div>
+      <div><b>${avgPct.toFixed(1)}%</b><span>average call (of commitment)</span></div>
+      <div><b>${avgNotice.toFixed(0)} days</b><span>average notice</span></div>
+      <div><b>${fmtMM(t.dist)}</b><span>distributed to our clients</span></div>
+      <div><b>${F.distPct ? (F.distPct / F.calledPct).toFixed(2) + "x" : "—"}</b><span>DPI (distributions ÷ paid-in)</span></div>
+    </div>
+    <div class="grid2" style="gap:16px">
+      <div><svg viewBox="0 0 ${Wd} ${Ht}" width="100%" role="img" aria-label="Call and distribution history">
+        <line x1="${pad - 8}" y1="${Ht - 22}" x2="${Wd - pad + 8}" y2="${Ht - 22}" stroke="#D5DBE3"/>${bars}<polyline points="${line}" fill="none" stroke="#187ABA" stroke-width="2"/>${yrs}</svg>
+        <div class="small"><span class="sw" style="background:#002B51"></span>Call <span class="sw" style="background:#1E7B4F"></span>Distribution <span class="sw" style="background:#187ABA;height:2px"></span>Cumulative % called (now ${F.calledPct}%)</div></div>
+      <div class="tbl-wrap" style="max-height:230px;overflow:auto"><table><thead><tr><th>Date</th><th>Event</th><th class="num">% of commit.</th><th class="num">All our clients</th><th class="num">Cum. called</th><th>Notes</th></tr></thead><tbody>
+        ${H.slice().reverse().map(e => `<tr><td style="white-space:nowrap">${dateFmt(e.date)}</td><td><span class="chip ${e.type === "Call" ? "info" : "ok"}">${e.type}</span></td><td class="num">${e.pct}%</td><td class="num">${fmt$(t.commit * e.pct / 100)}</td><td class="num">${e.cumPct ? e.cumPct.toFixed(1) + "%" : "—"}</td><td class="small">${e.notice ? `${e.notice}-day notice` : "Paid to clients"}${e.late ? ` · <span class="chip warn">${esc(clientName(e.late))} funded late</span>` : ""}</td></tr>`).join("")}
+      </tbody></table></div>
+    </div></div>`;
+}
+function renderCC() {
+  const groups = ccData(), allRows = groups.flatMap(g => g.rows);
+  const sum = k => allRows.reduce((a, r) => a + r[k], 0);
+  const calls30 = groups.filter(g => g.F.next.type === "Call" && g.t.d <= 30).reduce((a, g) => a + g.rows.reduce((b, r) => b + r.amt, 0), 0);
+  const needs = allRows.filter(r => r.needs).length;
+  $("#cc-kpis").innerHTML = `
+    <div class="kpi"><div class="v">${groups.length} <span style="font-size:15px;color:var(--muted)">funds</span></div><div class="l">${new Set(allRows.map(r => r.id)).size} clients · ${allRows.length} commitments</div></div>
+    <div class="kpi"><div class="v">${fmtMM(sum("commit"))}</div><div class="l">Commitments · ${fmtMM(sum("unfunded"))} unfunded</div></div>
+    <div class="kpi"><div class="v">${fmtMM(calls30)}</div><div class="l">Calls due in 30 days</div></div>
+    <div class="kpi"><div class="v" style="color:${needs ? "var(--bad)" : "var(--ok)"}">${needs}</div><div class="l">Clients needing a funding plan</div></div>`;
+  $("#cc-list").innerHTML = groups.length ? groups.map(({ F, t, rows }) => {
+    const isCall = F.next.type === "Call", due = isCall && t.d <= 30, gp = gpFor(F), nNeeds = rows.filter(r => r.needs).length;
+    const funded = rows.filter(r => ["Funded", "Funding arranged", "Received"].includes(r.plan.status)).length;
+    const gpCls = { "Notice received": "ok", "Estimated": "info", "Awaiting GP update": "warn" }[gp];
+    return `<div class="fund ${nNeeds ? "needs" : ""}">
+      <div class="fund-hd">
+        <div class="fund-name"><b>${esc(F.fund)}</b><div class="small">${esc(F.strategy)} · ${F.vintage.slice(0, 4)} vintage · ${rows.length} of ${F.lps.length} client${F.lps.length > 1 ? "s" : ""} shown</div></div>
+        <div class="fund-stat"><span class="l">Our commitments</span>${fmtMM(t.commit)}<div class="small">${F.calledPct}% called · ${fmtMM(t.unfunded)} unfunded</div></div>
+        <div class="fund-stat"><span class="l">Next event</span><span class="chip ${isCall ? (due ? "bad" : "info") : "ok"}">${F.next.type}</span> ${F.next.pct}% · ${fmtMM(t.nextAmt)}<div class="small">${dateFmt(F.next.date)} · in ${t.d} days</div></div>
+        <div class="fund-stat"><span class="l">GP notice</span><select data-gp="${esc(F.fund)}" class="st ${gpCls}" aria-label="GP notice status">${GP_STATUSES.map(s => `<option ${gp === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+          <div class="small">${isCall ? `${funded} of ${rows.length} clients arranged${nNeeds ? ` · <b style="color:var(--bad)">${nNeeds} need a plan</b>` : ""}` : "Distribution to clients"}</div></div>
+        <div class="fund-btns"><button class="btn sm" data-hist="${esc(F.fund)}" aria-expanded="${ccOpen.has(F.fund)}">${ccOpen.has(F.fund) ? "Hide history" : "Call history"}</button></div>
+      </div>
+      ${ccOpen.has(F.fund) ? `<div class="fund-hist">${historyPanel(F, t)}</div>` : ""}
+      <div class="tbl-wrap" style="border:0;border-top:1px solid var(--line)"><table class="cc"><thead><tr><th>Client</th><th class="num">Commitment</th><th class="num">Called to date</th><th class="num">${isCall ? "This call" : "This distribution"}</th><th>Client status</th><th>${isCall ? "CSA funding plan" : ""}</th></tr></thead><tbody>
+      ${rows.map(r => {
+        const stCls = { "Funded": "ok", "Funding arranged": "ok", "Received": "ok", "Client notified": "info", "Expected": "info", "Notice received": "info", "Not started": "warn" }[r.plan.status];
+        const plan = isCall ? `<div class="plan">
+            <select data-k="${esc(pkey(F, r.id))}" data-field="source" aria-label="Fund from"><option value="">Fund from…</option>${fundingSources(r.id).map(s => `<option value="${s.n}" ${r.plan.source === s.n ? "selected" : ""}>${esc(s.label)}${s.bal != null ? ` (${fmtMM(s.bal)})` : ""}</option>`).join("")}</select>
+            <div class="plan2"><select data-k="${esc(pkey(F, r.id))}" data-field="raise" aria-label="Funds need to be raised?"><option value="" ${!r.plan.raise ? "selected" : ""}>Raise funds?</option><option ${r.plan.raise === "No" ? "selected" : ""}>No</option><option ${r.plan.raise === "Yes" ? "selected" : ""}>Yes</option></select>
+            <input data-k="${esc(pkey(F, r.id))}" data-field="note" placeholder="Note for the FA" value="${esc(r.plan.note || "")}" aria-label="Note for the FA"></div>
+            ${r.short ? `<span class="chip bad">Source short by ${fmt$(r.short)}</span>` : r.needs ? `<span class="chip warn">${!r.plan.source ? "No funding source yet" : "Funds must be raised"}</span>` : `<span class="chip ok">Plan set</span>`}
+          </div>` : `<div class="small">Paid out to the client. No funding needed.</div>`;
+        return `<tr class="${r.needs ? "needs" : ""}"><td><b>${esc(r.name)}</b></td><td class="num">${fmt$(r.commit)}</td><td class="num">${fmt$(r.called)}<div class="small">${fmt$(r.unfunded)} unfunded</div></td><td class="num"><b>${fmt$(r.amt)}</b></td>
+          <td><select data-k="${esc(pkey(F, r.id))}" data-field="status" class="st ${stCls}" aria-label="Client status">${(isCall ? CLIENT_STATUSES : DIST_STATUSES).map(s => `<option ${r.plan.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></td>
+          <td style="min-width:300px">${plan}</td></tr>`; }).join("")}
+      </tbody>
+      <tfoot><tr><td>${rows.length} client${rows.length > 1 ? "s" : ""}</td><td class="num">${fmt$(rows.reduce((a, r) => a + r.commit, 0))}</td><td class="num">${fmt$(rows.reduce((a, r) => a + r.called, 0))}</td><td class="num">${fmt$(rows.reduce((a, r) => a + r.amt, 0))}</td><td colspan="2"></td></tr></tfoot></table></div>
+    </div>`; }).join("") : `<div class="empty">No funds or clients match these filters.</div>`;
+  $("#cc-list").querySelectorAll("[data-field]").forEach(el => el.addEventListener("change", () => {
+    const [fund, id] = el.dataset.k.split("|"), F = FUND_LIST.find(x => x.fund === fund);
+    ccPlan[el.dataset.k] = { ...planFor(F, id), [el.dataset.field]: el.value }; savePlan(); renderCC(); toast("Funding plan saved");
+  }));
+  $("#cc-list").querySelectorAll("[data-gp]").forEach(el => el.addEventListener("change", () => { gpPlan[el.dataset.gp] = el.value; savePlan(); renderCC(); toast("GP notice status saved"); }));
+  $("#cc-list").querySelectorAll("[data-hist]").forEach(b => b.onclick = () => { const f = b.dataset.hist; ccOpen.has(f) ? ccOpen.delete(f) : ccOpen.add(f); renderCC(); });
+}
+["#cc-hh", "#cc-st", "#cc-win", "#cc-act"].forEach(s => $(s).onchange = renderCC);
+$("#cc-reset").onclick = () => { ccPlan = {}; gpPlan = {}; savePlan(); renderCC(); toast("CSA inputs reset to the starting example"); };
+$("#cc-export").onclick = () => {
+  const head = ["Fund", "Next event", "Date", "% of commitment", "Client", "Commitment", "Amount", "GP notice", "Client status", "Fund from", "Raise funds", "Note"];
+  const lines = ccData().flatMap(({ F, rows }) => rows.map(r => [F.fund, F.next.type, F.next.date, F.next.pct, r.name, r.commit, r.amt, gpFor(F), r.plan.status, r.src ? r.src.label : "", r.plan.raise, r.plan.note || ""]));
+  const csv = [head, ...lines].map(a => a.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" })); a.download = "capital-call-funding-plan.csv"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+renderCC();
+
+/* =====================================================================
+   DATA DOWNLOAD + BACK LINK
+   ===================================================================== */
+$("#dl").onclick = e => {
+  e.preventDefault();
+  const data = { note: "Fictional mock data created by Andi Shievitz for a portfolio demo. Not real client data.", asOf: "2026-10-31", households: HOUSEHOLDS, prospects: PROSPECTS, statements: STATEMENTS, securityMaster: SECURITY_MASTER, pitchBooks: PITCH, fundList: FUND_LIST, trackerOnlyClients: EXTRA_CLIENTS, funds: FUNDS, spendingClients: SPEND_CLIENTS, ledgers: Object.fromEntries(HOUSEHOLDS.map(h => [h.id, buildLedger(h.id)])) };
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "andi-shievitz-mock-wealth-data.json"; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+// On GitHub Pages, send "Back to portfolio" to the rendered GitHub page instead of the raw .md file
+(function () {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if (m) { const user = m[1]; $("#backlink").href = `https://github.com/${user}`; }
+})();
+</script>
+</body>
+</html>
